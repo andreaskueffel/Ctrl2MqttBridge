@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MqttOpcUaBridge
+namespace MqttBridge
 {
-    public class OpcUaConsoleClient
+    public class OpcUaConsoleClient : IClient
     {
        
 
@@ -199,7 +199,7 @@ namespace MqttOpcUaBridge
             exitCode = ExitCode.ErrorRunning;
         }
 
-        internal async Task<uint> Subscribe(string nodeId, int interval)
+        public async Task<uint> Subscribe(string nodeId, int interval)
         {
             uint statuscode = await Task.Run(() =>
             {
@@ -243,7 +243,7 @@ namespace MqttOpcUaBridge
             return statuscode;
         }
 
-        internal async Task<uint> Write(string nodeId, string payload)
+        public async Task<uint> Write(string nodeId, string payload)
         {
             uint statusCode=await Task.Run(() =>
             {
@@ -270,7 +270,7 @@ namespace MqttOpcUaBridge
             return statusCode;
         }
 
-        internal async Task<string> Read(string nodeId)
+        public async Task<string> Read(string nodeId)
         {
             string ValueAsString = await Task.Run(() =>
             {

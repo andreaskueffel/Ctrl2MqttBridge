@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Siemens.Sinumerik.Operate.Services;
 
 
-namespace MqttOpcUaBridge
+namespace MqttBridge
 {
-    public class OperateNetService
+    public class OperateNetService : IClient
     {
 
         public static event EventHandler<MonitoredItem> NewNotification;
@@ -24,19 +24,28 @@ namespace MqttOpcUaBridge
             MonitoredItems = new SortedList<string, MonitoredItem>();
         }
 
-        public string ReadVariable(string Name)
+        public async Task<string> Read(string Name)
         {
-            Item item = new Item(Name);
-            DataSvcReadWrite.Read(item);
-            return Functions.GetStringFromDataObject(item.Value);
+            string result = await Task.Run(() =>
+            {
+                Item item = new Item("/" + Name);
+                DataSvcReadWrite.Read(item);
+                return Functions.GetStringFromDataObject(item.Value);
+            });
+            return result;
         }
-        public void WriteVariable(string Name, string Value)
+        public async Task<uint> Write(string Name, string Value)
         {
-            DataSvcReadWrite.Write(new Item(Name, Value));
+            uint result= await Task.Run(() =>
+            {
+                DataSvcReadWrite.Write(new Item("/"+Name, Value));
+                return (uint)0;
+            });
+            return result;
         }
 
 
-        internal async Task<uint> Subscribe(string nodeId, int interval)
+        public async Task<uint> Subscribe(string nodeId, int interval)
         {
             uint statuscode = await Task.Run(() =>
             {
@@ -44,7 +53,7 @@ namespace MqttOpcUaBridge
                 {
                     return (uint)0;
                 }
-                Item item = new Item(nodeId);
+                Item item = new Item("/" + nodeId);
                 MonitoredItem monitoredItem = new MonitoredItem()
                 {
                     DisplayName = nodeId,
