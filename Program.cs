@@ -13,18 +13,31 @@ namespace MqttOpcUaBridge
     class Program
     {
         const int MQTT_PORT = 51883;
-
+        static bool siemensdll = false;
         static void Main(string[] args)
         {
             Console.WriteLine("MQTT - OPC UA Bridge      PRÄWEMA (C) 2020");
            
             Task.Run(async () => await initMqttServer());
             Task.Run(async () => await initMqttClient());
-            Task.Run(async () => await initOPCUAClient());
+
+            siemensdll = true;
+            try
+            {
+                OperateNetService operateNetService = new OperateNetService();
+                OperateNetService.NewNotification += Client_NewNotification;
+            }
+            catch(Exception exc)
+            {
+                siemensdll = false;
+            }
+            if (!siemensdll)
+                Task.Run(async () => await initOPCUAClient());
             //Timer t = new Timer(async (e) => {
             //    await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = "timer", Payload = Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("s")) });
             //    });
             //t.Change(1000, 1000);
+            System.Diagnostics.Trace.WriteLine("Started in " + (siemensdll ? "SIEMENS DLL" : "OPC UA") + "Mode", "MAIN");
             Console.WriteLine("Press <ENTER> to exit");
             Console.ReadLine();
         }
@@ -72,10 +85,8 @@ namespace MqttOpcUaBridge
                         string[] arTopic = eventArgs.ApplicationMessage.Topic.Split('/');
                         try
                         {
-                            int ns = Convert.ToInt32(arTopic[2]);
-                            string s = arTopic[3];
                             string payload = eventArgs.ApplicationMessage.ConvertPayloadToString();
-                            uint resultCode=await opcUaConsoleClient.Write(String.Format("ns={0};s={1}", ns, s), payload);
+                            uint resultCode=await opcUaConsoleClient.Write(arTopic[2], payload);
                             await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = ("opcua/writeresult/" + arTopic[2] + "/" + arTopic[3]),Payload=Encoding.UTF8.GetBytes(resultCode.ToString()) });
                             if(resultCode==0)
                                 await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = ("opcua/writevalue/" + arTopic[2] + "/" + arTopic[3]), Payload = Encoding.UTF8.GetBytes(payload) });
@@ -90,11 +101,9 @@ namespace MqttOpcUaBridge
                         string[] arTopic = eventArgs.ApplicationMessage.Topic.Split('/');
                         try
                         {
-                            int ns = Convert.ToInt32(arTopic[2]);
-                            string s = arTopic[3];
                             string payload = eventArgs.ApplicationMessage.ConvertPayloadToString();
-                            string result = await opcUaConsoleClient.Read(String.Format("ns={0};s={1}", ns, s));
-                            await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = ("opcua/readresult/" + arTopic[2] + "/" + arTopic[3]), Payload = Encoding.UTF8.GetBytes(result) });
+                            string result = await opcUaConsoleClient.Read(arTopic[2]);
+                            await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = ("opcua/readresult/" + arTopic[2]), Payload = Encoding.UTF8.GetBytes(result) });
                         }
                         catch (Exception exc)
                         {
@@ -106,11 +115,9 @@ namespace MqttOpcUaBridge
                         string[] arTopic = eventArgs.ApplicationMessage.Topic.Split('/');
                         try
                         {
-                            int ns = Convert.ToInt32(arTopic[2]);
-                            string s = arTopic[3];
                             string payload = eventArgs.ApplicationMessage.ConvertPayloadToString();
                             int interval = Convert.ToInt32(payload);
-                            uint resultCode = await opcUaConsoleClient.Subscribe(String.Format("ns={0};s={1}", ns, s), interval);
+                            uint resultCode = await opcUaConsoleClient.Subscribe(arTopic[2], interval);
                         }
                         catch (Exception exc)
                         {
@@ -128,10 +135,10 @@ namespace MqttOpcUaBridge
 
             opcUaConsoleClient = new OpcUaConsoleClient("opc.tcp://192.168.142.250:4840", true, 5000);
             await opcUaConsoleClient.RunAsync();
-            OpcUaConsoleClient.NewNotification += OpcUaConsoleClient_NewNotification;
+            OpcUaConsoleClient.NewNotification += Client_NewNotification;
         }
 
-        private static void OpcUaConsoleClient_NewNotification(object sender, OpcUaConsoleClient.OpcItemNotificationEventArgs e)
+        private static void Client_NewNotification(object sender, MonitoredItem e)
         {
             if(mqttClient!=null && mqttClient.IsConnected)
             {

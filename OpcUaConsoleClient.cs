@@ -11,19 +11,10 @@ namespace MqttOpcUaBridge
 {
     public class OpcUaConsoleClient
     {
-        public class OpcItemNotificationEventArgs : EventArgs
-        {
-            public string DisplayName { get; set; }
-            public string Value { get; set; }
-            public string NodeId { get; set; }
-            public OpcItemNotificationEventArgs()
-            {
-
-            }
-        }
+       
 
 
-        public static event EventHandler<OpcItemNotificationEventArgs> NewNotification;
+        public static event EventHandler<MonitoredItem> NewNotification;
 
         const int ReconnectPeriod = 10;
         Session session;
@@ -190,10 +181,10 @@ namespace MqttOpcUaBridge
             subscriptions.Add(1000, subscription);
             Console.WriteLine("6 - Add a list of items (server current time and status) to the subscription.");
             exitCode = ExitCode.ErrorMonitoredItem;
-            var list = new List<MonitoredItem> {
-                new MonitoredItem(subscription.DefaultItem)
+            var list = new List<Opc.Ua.Client.MonitoredItem> {
+                new Opc.Ua.Client.MonitoredItem(subscription.DefaultItem)
                 {
-                    DisplayName = "ServerStatusCurrentTime", StartNodeId = "i="+Variables.Server_ServerStatus_CurrentTime.ToString()
+                    DisplayName = "ServerStatusCurrentTime", StartNodeId = "i="+ Variables.Server_ServerStatus_CurrentTime.ToString()
                 }
             };
             list.ForEach(i => i.Notification += OnNotification);
@@ -226,8 +217,8 @@ namespace MqttOpcUaBridge
                         return (uint)0;
 
                 //Sonst hinzufügen
-                var list = new List<MonitoredItem> {
-                new MonitoredItem(subscription.DefaultItem)
+                var list = new List<Opc.Ua.Client.MonitoredItem> {
+                new Opc.Ua.Client.MonitoredItem(subscription.DefaultItem)
                 {
                     DisplayName = nodeId.Substring(nodeId.LastIndexOf("=")), StartNodeId = NodeId.Parse(nodeId)
                 }
@@ -328,13 +319,13 @@ namespace MqttOpcUaBridge
             Console.WriteLine("--- RECONNECTED ---");
         }
 
-        private static void OnNotification(MonitoredItem item, MonitoredItemNotificationEventArgs e)
+        private static void OnNotification(Opc.Ua.Client.MonitoredItem item, MonitoredItemNotificationEventArgs e)
         {
             foreach (var value in item.DequeueValues())
             {
                 Console.WriteLine("{0}: {1}, {2}, {3}", item.DisplayName, value.Value, value.SourceTimestamp, value.StatusCode);
                 if (NewNotification != null)
-                    NewNotification(null, new OpcItemNotificationEventArgs()
+                    NewNotification(null, new MonitoredItem()
                     {
                         NodeId = item.StartNodeId.ToString(),
                         DisplayName = item.DisplayName,
