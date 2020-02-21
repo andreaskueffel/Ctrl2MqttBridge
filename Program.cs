@@ -1,4 +1,5 @@
-﻿using MQTTnet;
+﻿using MqttBridge.Interfaces;
+using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Client.Options;
 using MQTTnet.Client.Receiving;
@@ -17,16 +18,15 @@ namespace MqttBridge
         static IClient Client;
         static OperateNetService operateNetService;
         static OpcUaConsoleClient opcUaConsoleClient;
-
+        const bool TEST = false;
         static void Main(string[] args)
         {
-            Console.WriteLine("MQTT - OPC UA Bridge      PRÄWEMA (C) 2020");
+            Console.WriteLine("MQTT - Bridge      PRÄWEMA (C) 2020");
             
-            Task.Run(async () => await initMqttServer());
-            Task.Run(async () => await initMqttClient());
+            
 
-            Console.WriteLine("Press <ENTER> to INIT");
-            Console.ReadLine();
+            //Console.WriteLine("Press <ENTER> to INIT");
+            //Console.ReadLine();
             
             siemensdll = true;
             try
@@ -40,17 +40,31 @@ namespace MqttBridge
             }
             if (!siemensdll)
             {
-                Task.Run(async () => await initOPCUAClient());
+                Task.Run(async () => await initOPCUAClient()).Wait();
                 Client = (IClient)opcUaConsoleClient;
             }
             else
                 Client = (IClient)operateNetService;
-            
+
+            Task.Run(async () => await initMqttServer()).Wait();
+            Task.Run(async () => await initMqttClient()).Wait();
             //Timer t = new Timer(async (e) => {
             //    await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = "timer", Payload = Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("s")) });
             //    });
             //t.Change(1000, 1000);
-            
+            if (TEST)
+            {
+                Task.Run(async () =>
+                {
+                    for (int i = 1; i < 1000; i++)
+                    {
+                        System.Diagnostics.Trace.WriteLine("Subscribe R" + i + "...");
+                        await Client.Subscribe("channel/parameter/r[u1," + i + "]", 10);
+                    }
+                });
+            }
+
+
             System.Diagnostics.Trace.WriteLine("Started in " + (siemensdll ? "SIEMENS DLL" : "OPC UA") + "Mode", "MAIN");
             Console.WriteLine("Press <ENTER> to exit");
             Console.ReadLine();
@@ -94,39 +108,43 @@ namespace MqttBridge
                 {
                     System.Diagnostics.Trace.WriteLine(eventArgs.ApplicationMessage.Topic + " = " + eventArgs.ApplicationMessage.ConvertPayloadToString(), "MQTT Message Received");
                     
-                    if(eventArgs.ApplicationMessage.Topic.StartsWith("opcua/write/"))
+                    if(eventArgs.ApplicationMessage.Topic.StartsWith("mqttbridge/write/"))
                     {
-                        string subTopic = eventArgs.ApplicationMessage.Topic.Substring("opcua/write/".Length);
+                        string subTopic = eventArgs.ApplicationMessage.Topic.Substring("mqttbridge/write/".Length);
                         try
                         {
+                            uint resultCode = 1;
                             string payload = eventArgs.ApplicationMessage.ConvertPayloadToString();
-                            uint resultCode=await Client.Write(subTopic, payload);
-                            await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = ("opcua/writeresult/" +subTopic),Payload=Encoding.UTF8.GetBytes(resultCode.ToString()) });
+                            if (String.IsNullOrEmpty(payload))
+                                resultCode = 2;
+                            else
+                                resultCode = await Client.Write(subTopic, payload);
+                            await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = ("mqttbridge/writeresult/" +subTopic),Payload=Encoding.UTF8.GetBytes(resultCode.ToString()) });
                             if(resultCode==0)
-                                await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = ("opcua/writevalue/" + subTopic), Payload = Encoding.UTF8.GetBytes(payload) });
+                                await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = ("mqttbridge/writevalue/" + subTopic), Payload = Encoding.UTF8.GetBytes(payload) });
                         }
                         catch(Exception exc)
                         {
                             Console.WriteLine(exc.ToString());
                         }
                     }
-                    if (eventArgs.ApplicationMessage.Topic.StartsWith("opcua/read/"))
+                    if (eventArgs.ApplicationMessage.Topic.StartsWith("mqttbridge/read/"))
                     {
-                        string subTopic = eventArgs.ApplicationMessage.Topic.Substring("opcua/read/".Length);
+                        string subTopic = eventArgs.ApplicationMessage.Topic.Substring("mqttbridge/read/".Length);
                         try
                         {
                             string payload = eventArgs.ApplicationMessage.ConvertPayloadToString();
                             string result = await Client.Read(subTopic);
-                            await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = ("opcua/readresult/" + subTopic), Payload = Encoding.UTF8.GetBytes(result) });
+                            await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = ("mqttbridge/readresult/" + subTopic), Payload = Encoding.UTF8.GetBytes(result) });
                         }
                         catch (Exception exc)
                         {
                             Console.WriteLine(exc.ToString());
                         }
                     }
-                    if (eventArgs.ApplicationMessage.Topic.StartsWith("opcua/subscribe/"))
+                    if (eventArgs.ApplicationMessage.Topic.StartsWith("mqttbridge/subscribe/"))
                     {
-                        string subTopic = eventArgs.ApplicationMessage.Topic.Substring("opcua/subscribe/".Length);
+                        string subTopic = eventArgs.ApplicationMessage.Topic.Substring("mqttbridge/subscribe/".Length);
                         try
                         {
                             string payload = eventArgs.ApplicationMessage.ConvertPayloadToString();
@@ -147,20 +165,21 @@ namespace MqttBridge
         async static Task initOPCUAClient()
         {
 
-            opcUaConsoleClient = new OpcUaConsoleClient("opc.tcp://192.168.142.250:4840", true, 5000);
+            opcUaConsoleClient = new OpcUaConsoleClient("opc.tcp://192.168.214.241:4840", true, 5000);
             await opcUaConsoleClient.RunAsync();
             OpcUaConsoleClient.NewNotification += Client_NewNotification;
         }
 
-        private static void Client_NewNotification(object sender, MonitoredItem e)
+        private static void Client_NewNotification(object sender, IMonitoredItem e)
         {
             if(mqttClient!=null && mqttClient.IsConnected)
             {
-                mqttClient.PublishAsync(new MqttApplicationMessage()
+              mqttClient.PublishAsync(new MqttApplicationMessage()
                 {
-                    Topic = "opcua/subscriptionnotification/" + e.NodeId,
+                    Topic = "mqttbridge/subscriptionnotification/" + e.DisplayName,
                     Payload = Encoding.UTF8.GetBytes(e.Value)
                 });
+                
             }
         }
     }

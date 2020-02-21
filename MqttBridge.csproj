@@ -34,7 +34,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
+    <OutputPath>\\192.168.214.241\d%24\OperateNetComm\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -69,9 +69,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\MonitoredItemOpcUa.cs" />
     <Compile Include="Functions.cs" />
-    <Compile Include="IClient.cs" />
-    <Compile Include="ItemNotificationEventArgs.cs" />
+    <Compile Include="Interfaces\IClient.cs" />
+    <Compile Include="Interfaces\IMonitoredItem.cs" />
+    <Compile Include="Classes\MonitoredItemSiemens.cs" />
     <Compile Include="OpcUaConsoleClient.cs" />
     <Compile Include="OperateNetService.cs" />
     <Compile Include="Program.cs" />

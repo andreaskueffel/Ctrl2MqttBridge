@@ -1,4 +1,6 @@
-﻿using Opc.Ua;
+﻿using MqttBridge.Classes;
+using MqttBridge.Interfaces;
+using Opc.Ua;
 using Opc.Ua.Client;
 using Opc.Ua.Configuration;
 using System;
@@ -14,7 +16,7 @@ namespace MqttBridge
        
 
 
-        public static event EventHandler<MonitoredItem> NewNotification;
+        public static event EventHandler<IMonitoredItem> NewNotification;
 
         const int ReconnectPeriod = 10;
         Session session;
@@ -117,8 +119,12 @@ namespace MqttBridge
 
             Console.WriteLine("2 - Discover endpoints of {0}.", endpointURL);
             exitCode = ExitCode.ErrorDiscoverEndpoints;
+            var identity = new UserIdentity("HoningHMI","HoningHMI");
             if (endpointURL.Contains("142.250"))
+            {
+                identity = new UserIdentity(new AnonymousIdentityToken());
                 haveAppCertificate = false;
+            }
             var selectedEndpoint = CoreClientUtils.SelectEndpoint(endpointURL, haveAppCertificate, 15000);
             Console.WriteLine("    Selected endpoint uses: {0}",
                 selectedEndpoint.SecurityPolicyUri.Substring(selectedEndpoint.SecurityPolicyUri.LastIndexOf('#') + 1));
@@ -127,7 +133,7 @@ namespace MqttBridge
             exitCode = ExitCode.ErrorCreateSession;
             var endpointConfiguration = EndpointConfiguration.Create(config);
             var endpoint = new ConfiguredEndpoint(null, selectedEndpoint, endpointConfiguration);
-            session = await Session.Create(config, endpoint, false, "OPC UA Console Client", 60000, new UserIdentity(new AnonymousIdentityToken()), null);
+            session = await Session.Create(config, endpoint, false, "OPC UA Console Client", 60000, identity, null);
 
             // register keep alive handler
             session.KeepAlive += Client_KeepAlive;
@@ -199,8 +205,13 @@ namespace MqttBridge
             exitCode = ExitCode.ErrorRunning;
         }
 
-        public async Task<uint> Subscribe(string nodeId, int interval)
+        public async Task<uint> Subscribe(string rawNodeId, int interval)
         {
+            string nodeId = rawNodeId;
+            if (nodeId.StartsWith("channel/parameter/r"))
+                nodeId = "ns=2;s=" + nodeId.Replace("channel/parameter/r", "/Channel/Parameter/R");
+            if (!nodeId.StartsWith("ns=2"))
+                nodeId = "ns=2;s=/" + nodeId;
             uint statuscode = await Task.Run(() =>
             {
 
@@ -220,7 +231,7 @@ namespace MqttBridge
                 var list = new List<Opc.Ua.Client.MonitoredItem> {
                 new Opc.Ua.Client.MonitoredItem(subscription.DefaultItem)
                 {
-                    DisplayName = nodeId.Substring(nodeId.LastIndexOf("=")), StartNodeId = NodeId.Parse(nodeId)
+                    DisplayName = rawNodeId/*.Substring(nodeId.LastIndexOf("=")*/, StartNodeId = NodeId.Parse(nodeId)
                 }
             };
                 list.ForEach(i => i.Notification += OnNotification);
@@ -245,7 +256,11 @@ namespace MqttBridge
 
         public async Task<uint> Write(string nodeId, string payload)
         {
-            uint statusCode=await Task.Run(() =>
+            if (nodeId.StartsWith("channel/parameter/r"))
+                nodeId ="ns=2;s="+ nodeId.Replace("channel/parameter/r", "/Channel/Parameter/R");
+            if (!nodeId.StartsWith("ns=2"))
+                nodeId = "ns=2;s=/" + nodeId;
+            uint statusCode =await Task.Run(() =>
             {
                 DataValueCollection dataValues = new DataValueCollection();
                 DiagnosticInfoCollection diagnosticInfosRead = new DiagnosticInfoCollection();
@@ -272,6 +287,11 @@ namespace MqttBridge
 
         public async Task<string> Read(string nodeId)
         {
+            if (nodeId.StartsWith("channel/parameter/r"))
+                nodeId = "ns=2;s=" + nodeId.Replace("channel/parameter/r", "/Channel/Parameter/R");
+            if (!nodeId.StartsWith("ns=2"))
+                nodeId = "ns=2;s=/" + nodeId;
+
             string ValueAsString = await Task.Run(() =>
             {
                 DataValueCollection dataValues = new DataValueCollection();
@@ -325,7 +345,7 @@ namespace MqttBridge
             {
                 Console.WriteLine("{0}: {1}, {2}, {3}", item.DisplayName, value.Value, value.SourceTimestamp, value.StatusCode);
                 if (NewNotification != null)
-                    NewNotification(null, new MonitoredItem()
+                    NewNotification(null, new MonitoredItemOpcUa()
                     {
                         NodeId = item.StartNodeId.ToString(),
                         DisplayName = item.DisplayName,

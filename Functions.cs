@@ -16,17 +16,21 @@ namespace MqttBridge
                     return (string)item;
                 if (item.GetType() == typeof(int))
                     return ((int)item).ToString();
+                if (item.GetType() == typeof(uint))
+                    return ((uint)item).ToString();
                 if (item.GetType() == typeof(double))
                     return ((double)item).ToString().Replace(",", ".");
                 if (item.GetType() == typeof(float))
                     return ((float)item).ToString().Replace(",", ".");
+                if (item.GetType() == typeof(object))
+                    return "";
 
             }
             catch (Exception exc)
             {
                 return exc.ToString();
             }
-            return item.ToString();
+            return item.GetType().ToString();
         }
     }
 }

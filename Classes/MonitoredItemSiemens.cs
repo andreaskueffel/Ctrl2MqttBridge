@@ -1,16 +1,19 @@
-﻿using System;
+﻿using MqttBridge.Interfaces;
+using Siemens.Sinumerik.Operate.Services;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MqttBridge
+namespace MqttBridge.Classes
 {
-   public class MonitoredItem
+   public class MonitoredItemSiemens: IMonitoredItem
     {
         public string DisplayName { get; set; }
         public string Value { get; set; }
         public string NodeId { get; set; }
         public Guid Guid { get; set; }
-        public MonitoredItem()
+        public DataSvc DataSvc { get; set; }
+        public MonitoredItemSiemens()
         {
 
         }
