@@ -92,7 +92,13 @@ namespace MqttBridge
             }
         }
 
-
+        public bool IsConnected
+        {
+            get
+            {
+                return session != null && session.Connected;
+            }
+        }
         private async Task ConsoleSampleClient()
         {
             Console.WriteLine("1 - Create an Application Configuration.");
@@ -100,7 +106,7 @@ namespace MqttBridge
 
             ApplicationInstance application = new ApplicationInstance
             {
-                ApplicationName = "UA Core Sample Client",
+                ApplicationName = "UA MQTT Bridge Client",
                 ApplicationType = ApplicationType.Client,
                 ConfigSectionName = Utils.IsRunningOnMono() ? "Opc.Ua.MonoSampleClient" : "Opc.Ua.SampleClient"
             };
@@ -131,7 +137,7 @@ namespace MqttBridge
 
             Console.WriteLine("2 - Discover endpoints of {0}.", endpointURL);
             exitCode = ExitCode.ErrorDiscoverEndpoints;
-            var identity = new UserIdentity("HoningHMI","HoningHMI");
+            var identity = new UserIdentity(Program.MqttBridgeSettings.OpcUaUsername,Program.MqttBridgeSettings.OpcUaPassword);
             if (endpointURL.Contains("142.250"))
             {
                 identity = new UserIdentity(new AnonymousIdentityToken());
@@ -150,70 +156,70 @@ namespace MqttBridge
             // register keep alive handler
             session.KeepAlive += Client_KeepAlive;
 
-            Console.WriteLine("4 - Browse the OPC UA server namespace.");
-            exitCode = ExitCode.ErrorBrowseNamespace;
-            ReferenceDescriptionCollection references;
-            Byte[] continuationPoint;
+            //Console.WriteLine("4 - Browse the OPC UA server namespace.");
+            //exitCode = ExitCode.ErrorBrowseNamespace;
+            //ReferenceDescriptionCollection references;
+            //Byte[] continuationPoint;
 
-            references = session.FetchReferences(ObjectIds.ObjectsFolder);
+            //references = session.FetchReferences(ObjectIds.ObjectsFolder);
 
-            session.Browse(
-                null,
-                null,
-                ObjectIds.ObjectsFolder,
-                0u,
-                BrowseDirection.Forward,
-                ReferenceTypeIds.HierarchicalReferences,
-                true,
-                (uint)NodeClass.Variable | (uint)NodeClass.Object | (uint)NodeClass.Method,
-                out continuationPoint,
-                out references);
+            //session.Browse(
+            //    null,
+            //    null,
+            //    ObjectIds.ObjectsFolder,
+            //    0u,
+            //    BrowseDirection.Forward,
+            //    ReferenceTypeIds.HierarchicalReferences,
+            //    true,
+            //    (uint)NodeClass.Variable | (uint)NodeClass.Object | (uint)NodeClass.Method,
+            //    out continuationPoint,
+            //    out references);
 
-            Console.WriteLine(" DisplayName, BrowseName, NodeClass");
-            foreach (var rd in references)
-            {
-                Console.WriteLine(" {0}, {1}, {2}", rd.DisplayName, rd.BrowseName, rd.NodeClass);
-                ReferenceDescriptionCollection nextRefs;
-                byte[] nextCp;
-                session.Browse(
-                    null,
-                    null,
-                    ExpandedNodeId.ToNodeId(rd.NodeId, session.NamespaceUris),
-                    0u,
-                    BrowseDirection.Forward,
-                    ReferenceTypeIds.HierarchicalReferences,
-                    true,
-                    (uint)NodeClass.Variable | (uint)NodeClass.Object | (uint)NodeClass.Method,
-                    out nextCp,
-                    out nextRefs);
+            //Console.WriteLine(" DisplayName, BrowseName, NodeClass");
+            //foreach (var rd in references)
+            //{
+            //    Console.WriteLine(" {0}, {1}, {2}", rd.DisplayName, rd.BrowseName, rd.NodeClass);
+            //    ReferenceDescriptionCollection nextRefs;
+            //    byte[] nextCp;
+            //    session.Browse(
+            //        null,
+            //        null,
+            //        ExpandedNodeId.ToNodeId(rd.NodeId, session.NamespaceUris),
+            //        0u,
+            //        BrowseDirection.Forward,
+            //        ReferenceTypeIds.HierarchicalReferences,
+            //        true,
+            //        (uint)NodeClass.Variable | (uint)NodeClass.Object | (uint)NodeClass.Method,
+            //        out nextCp,
+            //        out nextRefs);
 
-                foreach (var nextRd in nextRefs)
-                {
-                    Console.WriteLine("   + {0}, {1}, {2}", nextRd.DisplayName, nextRd.BrowseName, nextRd.NodeClass);
-                }
-            }
+            //    foreach (var nextRd in nextRefs)
+            //    {
+            //        Console.WriteLine("   + {0}, {1}, {2}", nextRd.DisplayName, nextRd.BrowseName, nextRd.NodeClass);
+            //    }
+            //}
 
-            Console.WriteLine("5 - Create a subscription with publishing interval of 1 second.");
-            exitCode = ExitCode.ErrorCreateSubscription;
-            var subscription = new Subscription(session.DefaultSubscription) { PublishingInterval = 1000 };
-            subscriptions.Add(1000, subscription);
-            Console.WriteLine("6 - Add a list of items (server current time and status) to the subscription.");
-            exitCode = ExitCode.ErrorMonitoredItem;
-            var list = new List<Opc.Ua.Client.MonitoredItem> {
-                new Opc.Ua.Client.MonitoredItem(subscription.DefaultItem)
-                {
-                    DisplayName = "ServerStatusCurrentTime", StartNodeId = "i="+ Variables.Server_ServerStatus_CurrentTime.ToString()
-                }
-            };
-            list.ForEach(i => i.Notification += OnNotification);
-            subscription.AddItems(list);
+            //Console.WriteLine("5 - Create a subscription with publishing interval of 1 second.");
+            //exitCode = ExitCode.ErrorCreateSubscription;
+            //var subscription = new Subscription(session.DefaultSubscription) { PublishingInterval = 1000 };
+            //subscriptions.Add(1000, subscription);
+            //Console.WriteLine("6 - Add a list of items (server current time and status) to the subscription.");
+            //exitCode = ExitCode.ErrorMonitoredItem;
+            //var list = new List<Opc.Ua.Client.MonitoredItem> {
+            //    new Opc.Ua.Client.MonitoredItem(subscription.DefaultItem)
+            //    {
+            //        DisplayName = "ServerStatusCurrentTime", StartNodeId = "i="+ Variables.Server_ServerStatus_CurrentTime.ToString()
+            //    }
+            //};
+            //list.ForEach(i => i.Notification += OnNotification);
+            //subscription.AddItems(list);
 
-            Console.WriteLine("7 - Add the subscription to the session.");
-            exitCode = ExitCode.ErrorAddSubscription;
-            session.AddSubscription(subscription);
-            subscription.Create();
+            //Console.WriteLine("7 - Add the subscription to the session.");
+            //exitCode = ExitCode.ErrorAddSubscription;
+            //session.AddSubscription(subscription);
+            //subscription.Create();
 
-            Console.WriteLine("8 - Running...Press Ctrl-C to exit...");
+            Console.WriteLine("8 - Running...");
             exitCode = ExitCode.ErrorRunning;
         }
 
@@ -384,7 +390,7 @@ namespace MqttBridge
         {
             foreach (var value in item.DequeueValues())
             {
-                Console.WriteLine("{0}: {1}, {2}, {3}", item.DisplayName, value.Value, value.SourceTimestamp, value.StatusCode);
+                //Console.WriteLine("{0}: {1}, {2}, {3}", item.DisplayName, value.Value, value.SourceTimestamp, value.StatusCode);
                 if (NewNotification != null)
                     NewNotification(null, new MonitoredItemOpcUa()
                     {

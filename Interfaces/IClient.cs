@@ -13,6 +13,7 @@ namespace MqttBridge.Interfaces
         Task<uint> Subscribe(string nodeId, int interval);
         Task<uint> Unsubscribe(string nodeId);
         int SubscribedItemsCount { get; }
+        bool IsConnected { get; }
 
 
 

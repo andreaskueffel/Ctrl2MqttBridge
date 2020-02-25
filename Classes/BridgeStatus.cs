@@ -13,6 +13,8 @@ namespace MqttBridge.Classes
         public string Uptime { get; set; }
         public int SubcribedItemsCount { get; set; }
         public int ClientCount { get; set; }
+        public bool MqttServerOK { get; set; }
+        public bool ClientOK { get; set; }
 
         public double CPUUsage { get; set; }
         public string RAMUsage { get; set; }

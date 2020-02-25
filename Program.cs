@@ -4,6 +4,7 @@ using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Client.Options;
 using MQTTnet.Client.Receiving;
+using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Server;
 using Newtonsoft.Json;
 using System;
@@ -15,21 +16,23 @@ using System.Threading.Tasks;
 
 namespace MqttBridge
 {
-    class Program
+    public class Program
     {
-        const int MQTT_PORT = 51883;
-        static bool siemensdll = false;
+        const string SettingsFilename = "MqttBridgeSettings.json";
 
-        static IMqttClient mqttClient;
+        public static MqttBridgeSettings MqttBridgeSettings=new MqttBridgeSettings();
+
+        static IManagedMqttClient mqttClient;
         static IMqttServer mqttServer;
         static DateTime StartTime;
         static IClient Client;
         static OperateNetService operateNetService;
         static OpcUaConsoleClient opcUaConsoleClient;
-
+        static string MachineName;
         static void Main(string[] args)
         {
             StartTime = DateTime.Now;
+            MachineName = Environment.MachineName;
             Console.WriteLine("-----------------------------------------------------------");
             Console.WriteLine("MQTT - Bridge                              PRÄWEMA (c) 2020");
             Console.WriteLine("Version: " + typeof(Program).Assembly.GetName().Version.ToString());
@@ -38,14 +41,26 @@ namespace MqttBridge
 
             AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionHandler;
             
-            siemensdll = true;
-            try
+            Console.WriteLine("Getting settings...");
+            string settings = "";
+            if (File.Exists(SettingsFilename))
+                settings = File.ReadAllText(SettingsFilename);
+            if (!String.IsNullOrEmpty(settings)) try
+                {
+                    MqttBridgeSettings = JsonConvert.DeserializeObject<MqttBridgeSettings>(settings);
+                    Console.WriteLine("Settings read.");
+                }
+                catch { }
+
+            string newSettings = JsonConvert.SerializeObject(MqttBridgeSettings, Formatting.Indented);
+            if (settings != newSettings)
             {
-                Task.Run(async () => await initOperateNetService()).Wait(); 
-                Client = (IClient)operateNetService;
+                Console.WriteLine("Settings changed, save to "+SettingsFilename);
+                File.WriteAllText(SettingsFilename, newSettings);
             }
-            catch            {            }
-            if (Client==null)
+
+            
+            if (MqttBridgeSettings.OpcUaMode)
             {
                 try
                 {
@@ -54,22 +69,34 @@ namespace MqttBridge
                 }
                 catch { }
             }
+            if (!MqttBridgeSettings.OpcUaMode)
+            {
+                try
+                {
+                    Task.Run(async () => await initOperateNetService()).Wait();
+                    Client = (IClient)operateNetService;
+                }
+                catch { }
+            }
+
 
             Task.Run(async () => await initMqttServer()).Wait();
             Task.Run(async () => await initMqttClient()).Wait();
-
-            Timer t = new Timer(async (e) =>
+            if (MqttBridgeSettings.EnableStatus)
             {
+                Timer t = new Timer(async (e) =>
+                {
 
-                string bridgeStatusJson = JsonConvert.SerializeObject(await GetBridgeStatus());
-                await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = "mqttBridge/"+"bridgeStatus", Payload = Encoding.UTF8.GetBytes(bridgeStatusJson) });
-            });
-            t.Change(1000, 1000);
+                    string bridgeStatusJson = JsonConvert.SerializeObject(await GetBridgeStatus());
+                    await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = "mqttBridge/" + "bridgeStatus", Payload = Encoding.UTF8.GetBytes(bridgeStatusJson) });
+                });
+                t.Change(1000, 10000);
+            }
 
-            System.Diagnostics.Trace.WriteLine("Started in " + (siemensdll ? "SIEMENS DLL" : "OPC UA") + "Mode", "MAIN");
+            System.Diagnostics.Trace.WriteLine("Started in " + (MqttBridgeSettings.OpcUaMode ? "OPCUA" : "SIEMENSDLL") + "Mode", "MAIN");
             Console.WriteLine("Type 'q' to exit");
             string readLine = "";
-            while(readLine.ToLower()!="q")
+            while (readLine.ToLower() != "q")
                 readLine = Console.ReadLine();
         }
 
@@ -98,13 +125,15 @@ namespace MqttBridge
 
                 return new BridgeStatus()
                 {
-                    ClientCount = (await mqttServer.GetClientStatusAsync()).Count,
-                    OperationMode = Client!=null ? (siemensdll ? "OperateNetService" : "OPC UA"):"NO CTRL CONNECTION",
-                    ServerName = Environment.MachineName,
+                    ClientCount = ((await mqttServer.GetClientStatusAsync()).Count)-1,
+                    OperationMode = Client!=null ? (MqttBridgeSettings.OpcUaMode ? "OPCUA":"OperateNetService") : "NO_CTRL_CONNECTION",
+                    ServerName = MachineName,
                     SubcribedItemsCount = Client!=null?Client.SubscribedItemsCount:0,
                     Uptime = upTimeString,
                     CPUUsage = cpu,
-                    RAMUsage = ram
+                    RAMUsage = ram,
+                    ClientOK=Client!=null && Client.IsConnected,
+                    MqttServerOK=mqttServer!=null && mqttClient!=null && mqttClient.IsConnected
                 };
 
             });
@@ -117,7 +146,7 @@ namespace MqttBridge
             // Configure MQTT server.
             var optionsBuilder = new MqttServerOptionsBuilder()
                 .WithConnectionBacklog(100)
-                .WithDefaultEndpointPort(MQTT_PORT);
+                .WithDefaultEndpointPort(MqttBridgeSettings.MqttPort);
 
             mqttServer = new MqttFactory().CreateMqttServer();
             await mqttServer.StartAsync(optionsBuilder.Build());
@@ -126,18 +155,17 @@ namespace MqttBridge
         async static Task initMqttClient()
         {
             // Configure MQTT server.
-            var optionsBuilder = new MqttClientOptionsBuilder()
+            var optionsBuilder = new ManagedMqttClientOptionsBuilder()
+                .WithClientOptions( new MqttClientOptionsBuilder()
                 .WithCleanSession(true)
-                .WithTcpServer("localhost", MQTT_PORT)
+                .WithTcpServer("localhost", MqttBridgeSettings.MqttPort))
                 ;
 
-            mqttClient = new MqttFactory().CreateMqttClient();
-            await mqttClient.ConnectAsync(optionsBuilder.Build(), CancellationToken.None);
-            await mqttClient.SubscribeAsync(new MQTTnet.Client.Subscribing.MqttClientSubscribeOptions()
-            {
-                TopicFilters = new System.Collections.Generic.List<TopicFilter>() {
+            mqttClient = new MqttFactory().CreateManagedMqttClient();
+            await mqttClient.StartAsync(optionsBuilder.Build());
+            await mqttClient.SubscribeAsync(new System.Collections.Generic.List<TopicFilter>() {
                     (new TopicFilter() { Topic = "#" })
-                }
+                
             });
             mqttClient.ApplicationMessageReceivedHandler=new MessageReceivedHandler();
         }
@@ -232,16 +260,14 @@ namespace MqttBridge
                 {
                     operateNetService = new OperateNetService();
                     OperateNetService.NewNotification += Client_NewNotification;
-                    siemensdll = true;
                 }
-                catch
-                { siemensdll = false; }
+                catch { }
             });
         }
         async static Task initOPCUAClient()
         {
 
-            opcUaConsoleClient = new OpcUaConsoleClient("opc.tcp://192.168.214.241:4840", true, 5000);
+            opcUaConsoleClient = new OpcUaConsoleClient("opc.tcp://"+MqttBridgeSettings.ServerName+":"+MqttBridgeSettings.OpcUaPort, true, 5000);
             await opcUaConsoleClient.RunAsync();
             OpcUaConsoleClient.NewNotification += Client_NewNotification;
         }

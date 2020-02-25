@@ -23,6 +23,14 @@ namespace MqttBridge
         {
             get { return MonitoredItems.Count; }
         }
+        public bool IsConnected
+        {
+            get
+            {
+                return DataSvcReadWrite != null;
+            }
+        }
+
 
         public OperateNetService()
         {
