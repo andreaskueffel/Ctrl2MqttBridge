@@ -11,7 +11,8 @@ namespace MqttBridge.Interfaces
         Task<uint> Write(string nodeId, string payload);
         Task<string> Read(string nodeId);
         Task<uint> Subscribe(string nodeId, int interval);
-
+        Task<uint> Unsubscribe(string nodeId);
+        int SubscribedItemsCount { get; }
 
 
 

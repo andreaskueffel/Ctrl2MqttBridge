@@ -81,6 +81,18 @@ namespace MqttBridge
 
         public static ExitCode ExitCode { get => exitCode; }
 
+        public int SubscribedItemsCount
+        {
+            get
+            {
+                int count = 0;
+                foreach (var subscription in subscriptions)
+                    count += (int)subscription.Value.MonitoredItemCount;
+                return count;
+            }
+        }
+
+
         private async Task ConsoleSampleClient()
         {
             Console.WriteLine("1 - Create an Application Configuration.");
@@ -253,6 +265,35 @@ namespace MqttBridge
             });
             return statuscode;
         }
+
+        public async Task<uint> Unsubscribe(string rawNodeId)
+        {
+            string nodeId = rawNodeId;
+            if (nodeId.StartsWith("channel/parameter/r"))
+                nodeId = "ns=2;s=" + nodeId.Replace("channel/parameter/r", "/Channel/Parameter/R");
+            if (!nodeId.StartsWith("ns=2"))
+                nodeId = "ns=2;s=/" + nodeId;
+            uint statuscode = await Task.Run(() =>
+            {
+                //Ungetestet !!
+                foreach(var subscription in subscriptions)
+                {
+                    foreach(var item in subscription.Value.MonitoredItems)
+                    {
+                        if (item.StartNodeId == NodeId.Parse(nodeId))
+                        {
+                            try { item.Notification -= OnNotification; } catch { }
+                            subscription.Value.RemoveItem(item);
+                        }
+                    }                        
+                subscription.Value.ApplyChanges();
+                }
+               
+                return (uint)0;
+            });
+            return statuscode;
+        }
+
 
         public async Task<uint> Write(string nodeId, string payload)
         {

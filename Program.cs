@@ -1,10 +1,14 @@
-﻿using MqttBridge.Interfaces;
+﻿using MqttBridge.Classes;
+using MqttBridge.Interfaces;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Client.Options;
 using MQTTnet.Client.Receiving;
 using MQTTnet.Server;
+using Newtonsoft.Json;
 using System;
+using System.IO;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,59 +19,97 @@ namespace MqttBridge
     {
         const int MQTT_PORT = 51883;
         static bool siemensdll = false;
+
+        static IMqttClient mqttClient;
+        static IMqttServer mqttServer;
+        static DateTime StartTime;
         static IClient Client;
         static OperateNetService operateNetService;
         static OpcUaConsoleClient opcUaConsoleClient;
-        const bool TEST = false;
+
         static void Main(string[] args)
         {
-            Console.WriteLine("MQTT - Bridge      PRÄWEMA (C) 2020");
-            
-            
+            StartTime = DateTime.Now;
+            Console.WriteLine("-----------------------------------------------------------");
+            Console.WriteLine("MQTT - Bridge                              PRÄWEMA (c) 2020");
+            Console.WriteLine("Version: " + typeof(Program).Assembly.GetName().Version.ToString());
+            Console.WriteLine("");
+            Console.WriteLine("-----------------------------------------------------------");
 
-            //Console.WriteLine("Press <ENTER> to INIT");
-            //Console.ReadLine();
+            AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionHandler;
             
             siemensdll = true;
             try
             {
-                operateNetService = new OperateNetService();
-                OperateNetService.NewNotification += Client_NewNotification;
-            }
-            catch(Exception exc)
-            {
-                siemensdll = false;
-            }
-            if (!siemensdll)
-            {
-                Task.Run(async () => await initOPCUAClient()).Wait();
-                Client = (IClient)opcUaConsoleClient;
-            }
-            else
+                Task.Run(async () => await initOperateNetService()).Wait(); 
                 Client = (IClient)operateNetService;
+            }
+            catch            {            }
+            if (Client==null)
+            {
+                try
+                {
+                    Task.Run(async () => await initOPCUAClient()).Wait();
+                    Client = (IClient)opcUaConsoleClient;
+                }
+                catch { }
+            }
 
             Task.Run(async () => await initMqttServer()).Wait();
             Task.Run(async () => await initMqttClient()).Wait();
-            //Timer t = new Timer(async (e) => {
-            //    await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = "timer", Payload = Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("s")) });
-            //    });
-            //t.Change(1000, 1000);
-            if (TEST)
-            {
-                Task.Run(async () =>
-                {
-                    for (int i = 1; i < 1000; i++)
-                    {
-                        System.Diagnostics.Trace.WriteLine("Subscribe R" + i + "...");
-                        await Client.Subscribe("channel/parameter/r[u1," + i + "]", 10);
-                    }
-                });
-            }
 
+            Timer t = new Timer(async (e) =>
+            {
+
+                string bridgeStatusJson = JsonConvert.SerializeObject(await GetBridgeStatus());
+                await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = "mqttBridge/"+"bridgeStatus", Payload = Encoding.UTF8.GetBytes(bridgeStatusJson) });
+            });
+            t.Change(1000, 1000);
 
             System.Diagnostics.Trace.WriteLine("Started in " + (siemensdll ? "SIEMENS DLL" : "OPC UA") + "Mode", "MAIN");
-            Console.WriteLine("Press <ENTER> to exit");
-            Console.ReadLine();
+            Console.WriteLine("Type 'q' to exit");
+            string readLine = "";
+            while(readLine.ToLower()!="q")
+                readLine = Console.ReadLine();
+        }
+
+        private static void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs e)
+        {
+            Console.WriteLine("Unhandled Exception occured:\r\n" + e.ExceptionObject);
+        }
+
+        static double lastCPUMillis = 0;
+        static double lastUptimeMillis = 0;
+        static Task<BridgeStatus> GetBridgeStatus()
+        {
+            return Task.Run(async () =>
+            {
+                TimeSpan upTime = (DateTime.Now - StartTime);
+                string upTimeString = "P" + Math.Floor(upTime.TotalDays).ToString("0") + "DT" + upTime.Hours + "H" + upTime.Minutes + "M" + upTime.Seconds + "S";
+                double CPUMillis = System.Diagnostics.Process.GetCurrentProcess().TotalProcessorTime.TotalMilliseconds;
+                
+                double deltaCPUMillis =  CPUMillis - lastCPUMillis;
+                double deltaUptimeMillis = upTime.TotalMilliseconds - lastUptimeMillis;
+                lastCPUMillis = CPUMillis;
+                lastUptimeMillis = upTime.TotalMilliseconds;
+                double cpu = Math.Round(100.0*(deltaCPUMillis/deltaUptimeMillis),1);
+                string ram = (System.Diagnostics.Process.GetCurrentProcess().WorkingSet64/1024/1024)+" MiB";
+                
+
+                return new BridgeStatus()
+                {
+                    ClientCount = (await mqttServer.GetClientStatusAsync()).Count,
+                    OperationMode = Client!=null ? (siemensdll ? "OperateNetService" : "OPC UA"):"NO CTRL CONNECTION",
+                    ServerName = Environment.MachineName,
+                    SubcribedItemsCount = Client!=null?Client.SubscribedItemsCount:0,
+                    Uptime = upTimeString,
+                    CPUUsage = cpu,
+                    RAMUsage = ram
+                };
+
+            });
+
+
         }
 
         async static Task initMqttServer()
@@ -77,10 +119,10 @@ namespace MqttBridge
                 .WithConnectionBacklog(100)
                 .WithDefaultEndpointPort(MQTT_PORT);
 
-            var mqttServer = new MqttFactory().CreateMqttServer();
+            mqttServer = new MqttFactory().CreateMqttServer();
             await mqttServer.StartAsync(optionsBuilder.Build());
         }
-        static IMqttClient mqttClient;
+        
         async static Task initMqttClient()
         {
             // Configure MQTT server.
@@ -106,8 +148,10 @@ namespace MqttBridge
             {
                 return Task.Run(async () =>
                 {
+#if DEBUG
                     System.Diagnostics.Trace.WriteLine(eventArgs.ApplicationMessage.Topic + " = " + eventArgs.ApplicationMessage.ConvertPayloadToString(), "MQTT Message Received");
-                    
+#endif
+                    //WRITE
                     if(eventArgs.ApplicationMessage.Topic.StartsWith("mqttbridge/write/"))
                     {
                         string subTopic = eventArgs.ApplicationMessage.Topic.Substring("mqttbridge/write/".Length);
@@ -128,6 +172,7 @@ namespace MqttBridge
                             Console.WriteLine(exc.ToString());
                         }
                     }
+                    //READ
                     if (eventArgs.ApplicationMessage.Topic.StartsWith("mqttbridge/read/"))
                     {
                         string subTopic = eventArgs.ApplicationMessage.Topic.Substring("mqttbridge/read/".Length);
@@ -142,6 +187,7 @@ namespace MqttBridge
                             Console.WriteLine(exc.ToString());
                         }
                     }
+                    //SUBSCRIBE
                     if (eventArgs.ApplicationMessage.Topic.StartsWith("mqttbridge/subscribe/"))
                     {
                         string subTopic = eventArgs.ApplicationMessage.Topic.Substring("mqttbridge/subscribe/".Length);
@@ -157,11 +203,41 @@ namespace MqttBridge
                         }
 
                     }
+                    //UNSUBSCRIBE
+                    if (eventArgs.ApplicationMessage.Topic.StartsWith("mqttbridge/unsubscribe/"))
+                    {
+                        string subTopic = eventArgs.ApplicationMessage.Topic.Substring("mqttbridge/unsubscribe/".Length);
+                        try
+                        {
+                            string payload = eventArgs.ApplicationMessage.ConvertPayloadToString();
+                            int interval = Convert.ToInt32(payload);
+                            uint resultCode = await Client.Unsubscribe(subTopic);
+                        }
+                        catch (Exception exc)
+                        {
+                            Console.WriteLine(exc.ToString());
+                        }
+
+                    }
 
                 });
             }
         }
-        
+
+        async static Task initOperateNetService()
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+                    operateNetService = new OperateNetService();
+                    OperateNetService.NewNotification += Client_NewNotification;
+                    siemensdll = true;
+                }
+                catch
+                { siemensdll = false; }
+            });
+        }
         async static Task initOPCUAClient()
         {
 
