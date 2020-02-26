@@ -90,6 +90,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BridgeInstaller.cs" />
     <Compile Include="Classes\BridgeStatus.cs" />
     <Compile Include="Classes\MonitoredItemOpcUa.cs" />
     <Compile Include="Classes\MqttBridgeSettings.cs" />
@@ -97,6 +98,7 @@
     <Compile Include="Interfaces\IClient.cs" />
     <Compile Include="Interfaces\IMonitoredItem.cs" />
     <Compile Include="Classes\MonitoredItemSiemens.cs" />
+    <Compile Include="MqttBridge.cs" />
     <Compile Include="OpcUaConsoleClient.cs" />
     <Compile Include="OperateNetService.cs" />
     <Compile Include="Program.cs" />

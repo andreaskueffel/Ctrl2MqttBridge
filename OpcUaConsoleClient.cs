@@ -228,7 +228,7 @@ namespace MqttBridge
             string nodeId = rawNodeId;
             if (nodeId.StartsWith("channel/parameter/r"))
                 nodeId = "ns=2;s=" + nodeId.Replace("channel/parameter/r", "/Channel/Parameter/R");
-            if (!nodeId.StartsWith("ns=2"))
+            if (!nodeId.StartsWith("ns=2")&& !nodeId.StartsWith("i="))
                 nodeId = "ns=2;s=/" + nodeId;
             uint statuscode = await Task.Run(() =>
             {
@@ -277,7 +277,7 @@ namespace MqttBridge
             string nodeId = rawNodeId;
             if (nodeId.StartsWith("channel/parameter/r"))
                 nodeId = "ns=2;s=" + nodeId.Replace("channel/parameter/r", "/Channel/Parameter/R");
-            if (!nodeId.StartsWith("ns=2"))
+            if (!nodeId.StartsWith("ns=2") && !nodeId.StartsWith("i="))
                 nodeId = "ns=2;s=/" + nodeId;
             uint statuscode = await Task.Run(() =>
             {
@@ -305,7 +305,7 @@ namespace MqttBridge
         {
             if (nodeId.StartsWith("channel/parameter/r"))
                 nodeId ="ns=2;s="+ nodeId.Replace("channel/parameter/r", "/Channel/Parameter/R");
-            if (!nodeId.StartsWith("ns=2"))
+            if (!nodeId.StartsWith("ns=2") && !nodeId.StartsWith("i="))
                 nodeId = "ns=2;s=/" + nodeId;
             uint statusCode =await Task.Run(() =>
             {
@@ -336,7 +336,7 @@ namespace MqttBridge
         {
             if (nodeId.StartsWith("channel/parameter/r"))
                 nodeId = "ns=2;s=" + nodeId.Replace("channel/parameter/r", "/Channel/Parameter/R");
-            if (!nodeId.StartsWith("ns=2"))
+            if (!nodeId.StartsWith("ns=2") && !nodeId.StartsWith("i="))
                 nodeId = "ns=2;s=/" + nodeId;
 
             string ValueAsString = await Task.Run(() =>
