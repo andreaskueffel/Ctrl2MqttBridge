@@ -13,7 +13,9 @@ namespace MqttBridge.Classes
         {
             Console.WriteLine("Begin install");
             const bool ScanDirectories = false;
-            const string sysconfig = @"\\192.168.214.241\c$\ProgramData\Siemens\MotionControl\oem\sinumerik\hmi\cfg\systemconfiguration.ini";
+            //const string sysconfig = @"\\192.168.214.241\c$\ProgramData\Siemens\MotionControl\oem\sinumerik\hmi\cfg\systemconfiguration.ini";
+            const string sysconfig = @"C:\ProgramData\Siemens\MotionControl\oem\sinumerik\hmi\cfg\systemconfiguration.ini";
+
             const string procName = "PROC610";
             //Wenn der Prozess läuft erstmal beenden?
             var processes = System.Diagnostics.Process.GetProcessesByName("mqttbridge");
@@ -100,13 +102,13 @@ namespace MqttBridge.Classes
                 Console.WriteLine(procValue);
                 Console.ForegroundColor = ConsoleColor.White;
             }
-            string newValue = "process:=MQTTBRIDGE, cmdline:=\"" + exe + "\", deferred:=false, startupTime:=afterServices, oemframe:=true, processaffinitymask:=0xFFFFFFFF"; //windowname:=\"" + exe + "\",
-            newValue = "image:=\""+exe+"\", process:=mqttbridge, startupTime:=afterServices, workingdir:=\"" + exedir + "\", background:=true";
+            //string newValue = "process:=MQTTBRIDGE, cmdline:=\"" + exe + "\", deferred:=false, startupTime:=afterServices, oemframe:=true, processaffinitymask:=0xFFFFFFFF"; //windowname:=\"" + exe + "\",
+            string newValue = "image:=\""+exe+" -r\", process:=mqttbridge, startupTime:=afterServices, workingdir:=\"" + exedir + "\", background:=true";
             if (newValue != procValue)
             {
                 Console.WriteLine("Setting new value for " + procName + "=");
                 iniFile.SetValue("processes." + procName, newValue);
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(newValue);
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("Saving.");

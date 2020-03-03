@@ -26,6 +26,8 @@ namespace MqttBridge
         static void Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionHandler;
+            bool InstallOnly = false;
+            bool RunOnly = false;
 
             Console.WriteLine("-----------------------------------------------------------");
             Console.WriteLine("MQTT - Bridge                              PRÄWEMA (c) 2020");
@@ -40,11 +42,29 @@ namespace MqttBridge
                 {
                     if (arg.ToLower() == "install" || arg.ToLower()=="-i")
                     {
-                        Console.WriteLine("Installation Mode");
-                        Console.WriteLine("-----------------");
-                        BridgeInstaller.Install();
-                        return;
+                        InstallOnly = true;
                     }
+                    if (arg.ToLower() == "run" || arg.ToLower() == "-r")
+                    {
+                        RunOnly = true;
+                    }
+                }
+            }
+            if (!RunOnly)
+            {
+                Console.WriteLine("Installation Mode");
+                Console.WriteLine("-----------------");
+                BridgeInstaller.Install();
+                if (InstallOnly)
+                {
+                    return;
+                }
+                else
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Installation finished. Do you want to run production mode NOW? [y/n]");
+                    if (Console.ReadKey().Key != ConsoleKey.Y)
+                        return;
                 }
             }
 
