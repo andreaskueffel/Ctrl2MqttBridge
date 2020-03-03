@@ -38,7 +38,7 @@ namespace MqttBridge
             {
                 foreach (string arg in args)
                 {
-                    if (arg.ToLower() == "install")
+                    if (arg.ToLower() == "install" || arg.ToLower()=="-i")
                     {
                         Console.WriteLine("Installation Mode");
                         Console.WriteLine("-----------------");

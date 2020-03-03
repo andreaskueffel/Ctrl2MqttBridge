@@ -92,6 +92,7 @@
   <ItemGroup>
     <Compile Include="BridgeInstaller.cs" />
     <Compile Include="Classes\BridgeStatus.cs" />
+    <Compile Include="Classes\IniFile.cs" />
     <Compile Include="Classes\MonitoredItemOpcUa.cs" />
     <Compile Include="Classes\MqttBridgeSettings.cs" />
     <Compile Include="Functions.cs" />

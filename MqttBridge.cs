@@ -25,9 +25,9 @@ namespace MqttBridge
         OperateNetService operateNetService;
         OpcUaConsoleClient opcUaConsoleClient;
         string MachineName;
-        Thread MqttServerThread;
-        Thread MqttClientThread;
-        Thread ClientThread;
+        //Thread MqttServerThread;
+        //Thread MqttClientThread;
+        //Thread ClientThread;
 
         public MqttBridge()
         {
