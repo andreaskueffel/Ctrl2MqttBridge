@@ -15,7 +15,7 @@ namespace MqttBridge.Classes
             const bool ScanDirectories = false;
             //const string sysconfig = @"\\192.168.214.241\c$\ProgramData\Siemens\MotionControl\oem\sinumerik\hmi\cfg\systemconfiguration.ini";
             const string sysconfig = @"C:\ProgramData\Siemens\MotionControl\oem\sinumerik\hmi\cfg\systemconfiguration.ini";
-
+            const string TargetPath = @"C:\MqttBridge";
             const string procName = "PROC610";
             //Wenn der Prozess läuft erstmal beenden?
             var processes = System.Diagnostics.Process.GetProcessesByName("mqttbridge");
@@ -29,6 +29,40 @@ namespace MqttBridge.Classes
                 process.WaitForExit(2000);
                 process.Kill();
             }
+            string myExe = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
+            if (!myExe.EndsWith(".exe"))
+                myExe += ".exe";
+            string exe = Path.GetFullPath(myExe);//"MqttBridge.exe");
+            string exedir = Path.GetDirectoryName(exe);
+
+            if (!Directory.Exists(TargetPath))
+            {
+                Console.Write("Create directory " + TargetPath);
+                Directory.CreateDirectory(TargetPath);
+            }
+
+            //Copy Files
+            Console.Write("Copy files to " + TargetPath);
+            try
+            {
+                FileInfo[] files = new DirectoryInfo(exedir).GetFiles("*.*");
+                foreach (var file in files)
+                {
+                    Console.Write(".");
+                    File.Copy(file.FullName, TargetPath + "\\" + file.Name, true);
+                }
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Error - Copy files: \r\n" + e.ToString());
+                Console.ForegroundColor = ConsoleColor.White;
+                return;
+
+            }
+            Console.WriteLine();
+            
             if (!File.Exists(sysconfig))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -84,11 +118,7 @@ namespace MqttBridge.Classes
                     }
                 }
             }
-            string myExe = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
-            if (!myExe.EndsWith(".exe"))
-                myExe += ".exe";
-            string exe = Path.GetFullPath(myExe);//"MqttBridge.exe");
-            string exedir = Path.GetDirectoryName(exe);
+            
             //Alternativ Prozessnummer/Name festlegen und IMMER den nehmen. 610?
             Console.Write("Look for " + procName + " in "+sysconfig+"...");
             IniFile iniFile = new IniFile(sysconfig);

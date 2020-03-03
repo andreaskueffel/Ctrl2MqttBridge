@@ -57,6 +57,8 @@ namespace MqttBridge
                 BridgeInstaller.Install();
                 if (InstallOnly)
                 {
+                    Console.WriteLine("Press any key to exit");
+                    Console.ReadKey();
                     return;
                 }
                 else

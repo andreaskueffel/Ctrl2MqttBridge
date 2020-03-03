@@ -26,6 +26,8 @@ namespace SetupCreator
                 return;
             }
             string directory = args[0];
+            if (directory.EndsWith("\\"))
+                directory = directory.Remove(directory.Length - 1);
             if (!Directory.Exists(directory))
             {
                 Console.WriteLine("Verzeichnis "+directory+" existiert nicht");
@@ -43,10 +45,10 @@ namespace SetupCreator
             saveOptions.Description = "Präwema MQTT Bridge Setup Launcher";
             saveOptions.ProductVersion = "1.0.2.0";
             saveOptions.FileVersion = new Version(saveOptions.ProductVersion);
-            saveOptions.Quiet = false;
+            saveOptions.Quiet = true;
             saveOptions.RemoveUnpackedFilesAfterExecute = true;
             saveOptions.PostExtractCommandLine = "MqttBridge.exe -i";
-
+            
             myZip.SaveSelfExtractor("MqttBridgeSetup.exe", saveOptions);
         }
     }

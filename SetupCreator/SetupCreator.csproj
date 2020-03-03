@@ -70,4 +70,10 @@
     <PreBuildEvent>REM mkdir create
 REM copy $(SolutionDir)\bin\x86\CreateSetup\*.* create\*.*</PreBuildEvent>
   </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>if not $(ConfigurationName)==CreateSetup goto :endcreatesetup
+copy *.exe $(SolutionDir)\SetupCreatorTools\*.*
+copy *.dll $(SolutionDir)\SetupCreatorTools\*.*
+:endcreatesetup</PostBuildEvent>
+  </PropertyGroup>
 </Project>
