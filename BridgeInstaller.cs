@@ -17,9 +17,10 @@ namespace MqttBridge.Classes
             const string sysconfig = @"C:\ProgramData\Siemens\MotionControl\oem\sinumerik\hmi\cfg\systemconfiguration.ini";
             const string TargetPath = @"C:\MqttBridge";
             const string procName = "PROC610";
+            
             //Wenn der Prozess läuft erstmal beenden?
-            var processes = System.Diagnostics.Process.GetProcessesByName("mqttbridge");
             var myProcess = System.Diagnostics.Process.GetCurrentProcess();
+            var processes = System.Diagnostics.Process.GetProcessesByName(myProcess.ProcessName);
             foreach (var process in processes)
             {
                 if (process.Id == myProcess.Id)
@@ -29,37 +30,42 @@ namespace MqttBridge.Classes
                 process.WaitForExit(2000);
                 process.Kill();
             }
-            string myExe = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
+            
+            string myExe = myProcess.ProcessName;
             if (!myExe.EndsWith(".exe"))
                 myExe += ".exe";
             string exe = Path.GetFullPath(myExe);//"MqttBridge.exe");
             string exedir = Path.GetDirectoryName(exe);
-
-            if (!Directory.Exists(TargetPath))
+            
+            //Wenn setup gestartet aus Temp dir kopieren, sonst nicht
+            if (TargetPath.ToLower() != exedir.ToLower())
             {
-                Console.Write("Create directory " + TargetPath);
-                Directory.CreateDirectory(TargetPath);
-            }
-
-            //Copy Files
-            Console.Write("Copy files to " + TargetPath);
-            try
-            {
-                FileInfo[] files = new DirectoryInfo(exedir).GetFiles("*.*");
-                foreach (var file in files)
+                if (!Directory.Exists(TargetPath))
                 {
-                    Console.Write(".");
-                    File.Copy(file.FullName, TargetPath + "\\" + file.Name, true);
+                    Console.Write("Create directory " + TargetPath);
+                    Directory.CreateDirectory(TargetPath);
                 }
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine();
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Error - Copy files: \r\n" + e.ToString());
-                Console.ForegroundColor = ConsoleColor.White;
-                return;
 
+                //Copy Files
+                Console.Write("Copy files to " + TargetPath);
+                try
+                {
+                    FileInfo[] files = new DirectoryInfo(exedir).GetFiles("*.*");
+                    foreach (var file in files)
+                    {
+                        Console.Write(".");
+                        File.Copy(file.FullName, TargetPath + "\\" + file.Name, true);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Error - Copy files: \r\n" + e.ToString());
+                    Console.ForegroundColor = ConsoleColor.White;
+                    return;
+
+                }
             }
             Console.WriteLine();
             
@@ -133,7 +139,8 @@ namespace MqttBridge.Classes
                 Console.ForegroundColor = ConsoleColor.White;
             }
             //string newValue = "process:=MQTTBRIDGE, cmdline:=\"" + exe + "\", deferred:=false, startupTime:=afterServices, oemframe:=true, processaffinitymask:=0xFFFFFFFF"; //windowname:=\"" + exe + "\",
-            string newValue = "image:=\""+exe+" -r\", process:=mqttbridge, startupTime:=afterServices, workingdir:=\"" + exedir + "\", background:=true";
+            //string newValue = "image:=\""+exe+" -r\", process:=mqttbridge, startupTime:=afterServices, workingdir:=\"" + exedir + "\", background:=true";
+            string newValue = "image:=\"" + TargetPath+"\\"+myExe + " -r\", process:=mqttbridge, startupTime:=afterServices, workingdir:=\"" + TargetPath + "\", background:=true";
             if (newValue != procValue)
             {
                 Console.WriteLine("Setting new value for " + procName + "=");

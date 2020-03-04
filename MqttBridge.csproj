@@ -131,11 +131,12 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup>
-    <NoWin32Manifest>true</NoWin32Manifest>
-  </PropertyGroup>
+  <PropertyGroup />
   <PropertyGroup>
     <StartupObject>MqttBridge.Program</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>MqttBridgeSetup.exe.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Siemens.Sinumerik.Operate.Services">
@@ -168,6 +169,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="MqttBridgeSetup.exe.manifest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MQTTnet">
@@ -209,7 +213,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>if not $(ConfigurationName)==CreateSetup goto :endcreatesetup
-$(ProjectDir)\SetupCreatorTools\SetupCreator.exe $(TargetDir)
+ $(ProjectDir)\SetupCreatorTools\SetupCreator.exe $(TargetDir)
+rem D:\Source\References\MT\mt.exe -manifest "$(TargetDir)MqttBridgeSetup.exe.manifest"  -outputresource:"$(TargetDir)MqttBridgeSetup.exe";1
 :endcreatesetup</PostBuildEvent>
   </PropertyGroup>
 </Project>
