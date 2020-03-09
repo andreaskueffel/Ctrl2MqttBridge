@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,7 @@ namespace MqttBridge.Classes
 {
     public static class BridgeInstaller
     {
+        static bool ProcWasRunning = false;
         public static void Install()
         {
             Console.WriteLine("Begin install");
@@ -25,7 +27,7 @@ namespace MqttBridge.Classes
             {
                 if (process.Id == myProcess.Id)
                     continue;
-
+                ProcWasRunning = true;
                 process.CloseMainWindow();
                 process.WaitForExit(2000);
                 process.Kill();
@@ -156,6 +158,23 @@ namespace MqttBridge.Classes
                 Console.WriteLine("Value for "+procName+" is OK");
             }
             Console.WriteLine();
+            if (ProcWasRunning)
+            {
+                Console.WriteLine("MqttBridge was running before install.");
+                Console.Write("Shall i try to restart the service? [y/n]");
+                var key = Console.ReadKey();
+                if(key.Key== ConsoleKey.Y)
+                {
+                    Console.WriteLine("This will not work with 3GL/OperateNet - please restart OPERATE");
+                    //Console.WriteLine();
+                    //Console.Write("Try to start " + exe+"...");
+                    //string filename= TargetPath + "\\" + myExe + " -r";
+                    //Process p = new Process();
+                    //p.StartInfo = new ProcessStartInfo(filename);
+                    //p.Start();
+                    //Console.Write("OK");
+                }
+            }
             Console.WriteLine();
             Console.WriteLine("Done- over and out.");
         }

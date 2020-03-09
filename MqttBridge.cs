@@ -8,6 +8,7 @@ using MQTTnet.Extensions.ManagedClient;
 using MQTTnet.Server;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Text;
@@ -28,11 +29,15 @@ namespace MqttBridge
         //Thread MqttServerThread;
         //Thread MqttClientThread;
         //Thread ClientThread;
+        Dictionary<string, bool> ClientRights;
+        string ClientId;
 
         public MqttBridge()
         {
             StartTime = DateTime.Now;
             MachineName = Environment.MachineName;
+            ClientRights = new Dictionary<string, bool>();
+            ClientId = "praekon_mqttBridge_" + StartTime.ToString("yyyyMMddHHmmss");
             //MqttServerThread = new Thread(new ThreadStart(()=>initMqttServer()));
         }
 
@@ -112,13 +117,51 @@ namespace MqttBridge
 
 
         }
-
+        
         async Task initMqttServer()
         {
             // Configure MQTT server.
             var optionsBuilder = new MqttServerOptionsBuilder()
                 .WithConnectionBacklog(100)
+                .WithConnectionValidator(c =>
+                {
+                    //Wenn der Client schon mal da war raus nehmen:
+                    if(ClientRights.ContainsKey(c.ClientId))
+                    {
+                        ClientRights.Remove(c.ClientId);
+                    }
+                    bool canPublish = false;
+
+                    if (c.ClientId == ClientId)
+                        canPublish = true;
+                    
+                    if(!c.ClientId.StartsWith("praekon_HoningHMI_"))
+                    {
+
+                    }
+                    if (c.Username == "HoningHMI" && c.Password == "HoningHMI")
+                    {
+                        //c.ReasonCode = MQTTnet.Protocol.MqttConnectReasonCode.BadUserNameOrPassword;
+                        //return;
+                        canPublish = true;
+                    }
+                    ClientRights.Add(c.ClientId, canPublish);
+                    c.ReasonCode = MQTTnet.Protocol.MqttConnectReasonCode.Success;
+                    
+                })
+                .WithApplicationMessageInterceptor(m =>
+                {
+                    if (ClientRights.ContainsKey(m.ClientId)) //Sollte immer true sein...
+                        m.AcceptPublish = ClientRights[m.ClientId];
+                    else
+                        m.AcceptPublish = false;
+                })
+                .WithSubscriptionInterceptor(s =>
+                {
+                    s.AcceptSubscription = true;
+                })
                 .WithDefaultEndpointPort(Program.MqttBridgeSettings.MqttPort);
+            
 
             mqttServer = new MqttFactory().CreateMqttServer();
             await mqttServer.StartAsync(optionsBuilder.Build());
@@ -130,8 +173,10 @@ namespace MqttBridge
             var optionsBuilder = new ManagedMqttClientOptionsBuilder()
                 .WithClientOptions(new MqttClientOptionsBuilder()
                 .WithCleanSession(true)
-                .WithTcpServer("localhost", Program.MqttBridgeSettings.MqttPort))
-                ;
+                .WithClientId(ClientId)
+                .WithCredentials("MqttBridge", "MqttBridge")
+                .WithTcpServer("localhost", Program.MqttBridgeSettings.MqttPort));
+                
 
             mqttClient = new MqttFactory().CreateManagedMqttClient();
             await mqttClient.StartAsync(optionsBuilder.Build());
