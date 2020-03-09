@@ -136,7 +136,7 @@
     <StartupObject>MqttBridge.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationManifest>MqttBridgeSetup.exe.manifest</ApplicationManifest>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Siemens.Sinumerik.Operate.Services">
@@ -169,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="app.manifest" />
     <None Include="MqttBridgeSetup.exe.manifest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
