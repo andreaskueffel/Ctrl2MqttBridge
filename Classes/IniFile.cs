@@ -165,7 +165,7 @@ namespace MqttBridge.Classes
                 if (GetIndexForSection(section, newContent )==-1)
                 {
                     //Section einfügen und Key
-                    newContent.Add("[" + kvp.Key.Substring(0, kvp.Key.IndexOf(sectionDelimiter)).ToUpper() + "]");
+                    newContent.Add("[" + kvp.Key.Substring(0, kvp.Key.IndexOf(sectionDelimiter)).ToLower() + "]");
                     newContent.Add(kvp.Key.Substring(kvp.Key.IndexOf(sectionDelimiter) + 1).ToUpper() + separator + kvp.Value);
                     continue;
                 }
