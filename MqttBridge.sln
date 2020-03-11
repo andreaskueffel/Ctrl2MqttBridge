@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MqttBridge", "MqttBridge.cs
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SetupCreator", "SetupCreator\SetupCreator.csproj", "{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtrlConnection", "CtrlConnection\CtrlConnection.csproj", "{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		CreateSetup|Any CPU = CreateSetup|Any CPU
@@ -51,6 +53,22 @@ Global
 		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.Release|x86.ActiveCfg = Release|Any CPU
 		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.Release|x86.Build.0 = Release|Any CPU
+		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.CreateSetup|Any CPU.ActiveCfg = Release|Any CPU
+		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.CreateSetup|Any CPU.Build.0 = Release|Any CPU
+		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.CreateSetup|x86.ActiveCfg = Release|Any CPU
+		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.CreateSetup|x86.Build.0 = Release|Any CPU
+		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.Debug|x86.Build.0 = Debug|Any CPU
+		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.DebugLocal|Any CPU.ActiveCfg = Debug|Any CPU
+		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.DebugLocal|Any CPU.Build.0 = Debug|Any CPU
+		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.DebugLocal|x86.ActiveCfg = Debug|Any CPU
+		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.DebugLocal|x86.Build.0 = Debug|Any CPU
+		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.Release|x86.ActiveCfg = Release|Any CPU
+		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
