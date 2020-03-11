@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using MqttBridge.Classes;
 using MqttBridge.Interfaces;
@@ -101,6 +100,7 @@ namespace MqttBridge
                  
                     if (MonitoredItems.ContainsKey(nodeId))
                     {
+                        OnNewNotification(new KeyValuePair<string, MonitoredItemSiemens>(nodeId, MonitoredItems[nodeId]));
                         return (uint)1;
                     }
                     try
@@ -173,11 +173,17 @@ namespace MqttBridge
                             fireEvent = true;
                         }
                     }
-                    if (!String.IsNullOrEmpty(i.Value.Value) && fireEvent)
-                        if (NewNotification != null)
-                            NewNotification(this, i.Value);
+                    if(fireEvent)
+                        OnNewNotification(i);
                 }
             }
+        }
+
+        private void OnNewNotification(KeyValuePair<string, MonitoredItemSiemens> i)
+        {
+            if (!String.IsNullOrEmpty(i.Value.Value))
+                if (NewNotification != null)
+                    NewNotification(this, i.Value);
         }
 
         #region IDisposable Support
