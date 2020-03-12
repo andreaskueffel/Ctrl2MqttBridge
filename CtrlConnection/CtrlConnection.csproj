@@ -7,7 +7,7 @@
     <ProjectGuid>{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CtrlConnection</RootNamespace>
+    <RootNamespace>MqttBridge</RootNamespace>
     <AssemblyName>CtrlConnection</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -30,9 +30,13 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -42,7 +46,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BridgeConnection.cs" />
+    <Compile Include="EnumAxis.cs" />
+    <Compile Include="EnumRList.cs" />
+    <Compile Include="MonitoredItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Storage.cs" />
+    <Compile Include="SubscriptionHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MQTTnet.Extensions.ManagedClient">
+      <Version>3.0.8</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
