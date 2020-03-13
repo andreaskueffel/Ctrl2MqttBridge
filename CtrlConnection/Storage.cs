@@ -23,12 +23,16 @@ namespace MqttBridge
             IList<ManagedMqttApplicationMessage> _return = new List<ManagedMqttApplicationMessage>();
             if (!File.Exists(FileName))
                 return Task.FromResult(_return);
-            using (FileStream stream = new FileStream(FileName, FileMode.Open))
+            try
             {
-                DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(IList<ManagedMqttApplicationMessage>));
-                _return = (IList<ManagedMqttApplicationMessage>)deserializer.ReadObject(stream);
-                stream.Close();
+                using (FileStream stream = new FileStream(FileName, FileMode.Open))
+                {
+                    DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(IList<ManagedMqttApplicationMessage>));
+                    _return = (IList<ManagedMqttApplicationMessage>)deserializer.ReadObject(stream);
+                    stream.Close();
+                }
             }
+            catch { }
 
             return Task.FromResult(_return);
         }
