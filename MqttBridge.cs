@@ -72,7 +72,7 @@ namespace MqttBridge
                 {
 
                     string bridgeStatusJson = JsonConvert.SerializeObject(await GetBridgeStatus());
-                    await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = "mqttBridge/" + "bridgeStatus", Payload = Encoding.UTF8.GetBytes(bridgeStatusJson) });
+                    await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = "mqttbridge/" + "bridgeStatus", Payload = Encoding.UTF8.GetBytes(bridgeStatusJson) });
                 });
                 t.Change(1000, 10000);
             }
