@@ -62,7 +62,7 @@ namespace MqttBridge
         {
             if (mqttClient != null)
             {
-                mqttClient.StopAsync().Wait();
+                //mqttClient.StopAsync().Wait();
                 mqttClient.Dispose();
                 mqttClient = null;
             }
