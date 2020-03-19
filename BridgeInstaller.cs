@@ -11,7 +11,7 @@ namespace MqttBridge.Classes
     public static class BridgeInstaller
     {
         static bool ProcWasRunning = false;
-        public static void Install()
+        public static int Install(bool silent)
         {
             Console.WriteLine("Begin install");
             const bool ScanDirectories = false;
@@ -19,8 +19,14 @@ namespace MqttBridge.Classes
             const string sysconfig = @"C:\ProgramData\Siemens\MotionControl\oem\sinumerik\hmi\cfg\systemconfiguration.ini";
             const string TargetPath = @"C:\MqttBridge";
             const string procName = "PROC610";
-            
+
             //Wenn der Prozess läuft erstmal beenden?
+            //Erstmal Version prüfen und sehen ob ein Update nötig ist!
+            //Ansonsten auch Meldung bringen das Operate neu gestartet werden muss!!
+            //if (File.Exists(TargetPath + "\\MqttBridge.exe")) {
+            //    FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(TargetPath + "\\MqttBridge.exe");
+            //    if(fvi.FileVersion==Process.GetCurrentProcess())
+            //        }
             var myProcess = System.Diagnostics.Process.GetCurrentProcess();
             var processes = System.Diagnostics.Process.GetProcessesByName(myProcess.ProcessName);
             foreach (var process in processes)
@@ -65,7 +71,7 @@ namespace MqttBridge.Classes
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Error - Copy files: \r\n" + e.ToString());
                     Console.ForegroundColor = ConsoleColor.White;
-                    return;
+                    return Errors.CopyFiles;
 
                 }
             }
@@ -76,7 +82,7 @@ namespace MqttBridge.Classes
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Error - file not found: " + sysconfig);
                 Console.ForegroundColor = ConsoleColor.White;
-                return;
+                return Errors.SysconfigNotFound;
             }
             //Alle systemconfiguration.ini Dateien suchen und alle Prozesse auflisten?
             if (ScanDirectories)
@@ -116,12 +122,12 @@ namespace MqttBridge.Classes
                         Console.ForegroundColor = ConsoleColor.Red;
                         throw new NotImplementedException("Diese Funktion gibt es leider noch nicht");
                         Console.ForegroundColor = ConsoleColor.White;
-                        return;
+                        return -99;
                     }
                     else
                     {
                         Console.WriteLine("Done.");
-                        return;
+                        return -99;
 
                     }
                 }
@@ -158,7 +164,7 @@ namespace MqttBridge.Classes
                 Console.WriteLine("Value for "+procName+" is OK");
             }
             Console.WriteLine();
-            if (ProcWasRunning)
+            if (ProcWasRunning && !silent)
             {
                 Console.WriteLine("MqttBridge was running before install.");
                 Console.Write("Shall i try to restart the service? [y/n]");
@@ -177,6 +183,7 @@ namespace MqttBridge.Classes
             }
             Console.WriteLine();
             Console.WriteLine("Done- over and out.");
+            return Errors.None;
         }
         static int cursorStart = 0;
         static List<string> GetFilesRecursive(string startDir)
@@ -213,6 +220,13 @@ namespace MqttBridge.Classes
                     fileList.Add(fi.FullName);
                 }
             }
+        }
+        public static class Errors
+        {
+            public const int None = 0;
+            public const int SysconfigNotFound = -1;
+            public const int CopyFiles = -2;
+
         }
     }
 }

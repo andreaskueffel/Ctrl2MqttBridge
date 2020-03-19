@@ -1,6 +1,7 @@
 ﻿using Ionic.Zip;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -34,6 +35,9 @@ namespace SetupCreator
                 Environment.Exit(-2);
                 return;
             }
+
+            FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(directory + "\\MqttBridge.exe");
+
             myZip.AddDirectory(directory, "");
             SelfExtractorSaveOptions saveOptions = new SelfExtractorSaveOptions();
             saveOptions.ExtractExistingFile = ExtractExistingFileAction.OverwriteSilently;
@@ -43,13 +47,13 @@ namespace SetupCreator
             saveOptions.Copyright = "Copyright(C) 2020 Präwema Antriebstechnik GmbH";
             saveOptions.DefaultExtractDirectory = "%TEMP%\\MqttBridge"+DateTime.Now.ToString("yyyymmddHHMMss");
             saveOptions.Description = "Präwema MQTT Bridge Setup Launcher";
-            saveOptions.ProductVersion = "1.0.2.0";
+            saveOptions.ProductVersion = fvi.FileVersion;
             saveOptions.FileVersion = new Version(saveOptions.ProductVersion);
             saveOptions.Quiet = true;
             saveOptions.RemoveUnpackedFilesAfterExecute = true;
             saveOptions.PostExtractCommandLine = "MqttBridge.exe -i";
             
-            myZip.SaveSelfExtractor("MqttBridgeSetup.exe", saveOptions);
+            myZip.SaveSelfExtractor(String.Format("MqttBridgeSetup-{0}.exe",fvi.FileVersion.ToString()), saveOptions);
         }
     }
 }

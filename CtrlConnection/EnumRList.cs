@@ -52,6 +52,7 @@ namespace MqttBridge
 
         StateWPMeas = 1915,       //Status Einmitten
 
+
         GrindingCorr1 = 6920,     //Durchmesser Korrektur Schleifen
         GrindingCorr2 = 6921,     //Durchmesser Korrektur Schleifen
         GrindingCorr3 = 6922,     //Durchmesser Korrektur Schleifen
@@ -62,6 +63,15 @@ namespace MqttBridge
         GrindingCorr8 = 6927,     //Durchmesser Korrektur Schleifen
         GrindingCorr9 = 6928,     //Durchmesser Korrektur Schleifen
         GrindingCorr10 = 6929,     //Durchmesser Korrektur Schleifen
+
+        GrindingActDia = 6262,     //Aktueller Durchmesser Schleifscheibe
+        GrindingActDressing = 6270,     //Aktueller Abrichtbetrag Schleifscheibe
+
+        GrindingActDressingCounter = 6285,     //Aktueller Abrichtzaehler Zyklus
+        GrindingActDressingMaxCounter = 6280,     //Aktueller Sollzyklus Aabrichten
+        GrindingActDressingCounterTillDress = 6908,     //Restzähler Zyklen bis Abrichten
+        GrindingDressAct = 6910,     //Abrichten
+        GrindingNewTool = 6911,     //neue Schleifscheibe eingebaut
 
     }
 }

@@ -43,22 +43,22 @@ namespace MqttBridge
 
         public async Task StartAsync()
         {
-
-            if (Program.MqttBridgeSettings.OpcUaMode)
-            {
-                try
-                {
-                    await Task.Run(async () => await initOPCUAClient());
-                    Client = (IClient)opcUaConsoleClient;
-                }
-                catch { }
-            }
+            bool opcUaFallback = false;
             if (!Program.MqttBridgeSettings.OpcUaMode)
             {
                 try
                 {
                     await Task.Run(async () => await initOperateNetService());
                     Client = (IClient)operateNetService;
+                }
+                catch { opcUaFallback = true; Program.MqttBridgeSettings.OpcUaMode = true; }
+            }
+            if (Program.MqttBridgeSettings.OpcUaMode || opcUaFallback)
+            {
+                try
+                {
+                    await Task.Run(async () => await initOPCUAClient());
+                    Client = (IClient)opcUaConsoleClient;
                 }
                 catch { }
             }

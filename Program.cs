@@ -54,11 +54,16 @@ namespace MqttBridge
             {
                 Console.WriteLine("Installation Mode");
                 Console.WriteLine("-----------------");
-                BridgeInstaller.Install();
+                int result = BridgeInstaller.Install(InstallOnly);
                 if (InstallOnly)
                 {
-                    Console.WriteLine("Press any key to exit");
-                    Console.ReadKey();
+                    //Console.WriteLine("Press any key to exit");
+                    //Console.ReadKey();
+                    if(result!=BridgeInstaller.Errors.None)
+                    {
+                        Console.WriteLine("Errors occured, Code "+result+" Press any key to exit");
+                        Console.ReadKey();
+                    }
                     return;
                 }
                 else

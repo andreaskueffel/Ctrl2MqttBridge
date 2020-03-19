@@ -207,7 +207,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>del *Setup.exe</PreBuildEvent>
+    <PreBuildEvent>del *Setup*.exe</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>if not $(ConfigurationName)==CreateSetup goto :endcreatesetup
