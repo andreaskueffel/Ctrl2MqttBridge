@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MqttBridge.Classes
@@ -17,6 +18,7 @@ namespace MqttBridge.Classes
             const bool ScanDirectories = false;
             //const string sysconfig = @"\\192.168.214.241\c$\ProgramData\Siemens\MotionControl\oem\sinumerik\hmi\cfg\systemconfiguration.ini";
             const string sysconfig = @"C:\ProgramData\Siemens\MotionControl\oem\sinumerik\hmi\cfg\systemconfiguration.ini";
+            const string sysconfigpath = @"C:\ProgramData\Siemens\MotionControl\oem\sinumerik\hmi\cfg";
             const string TargetPath = @"C:\MqttBridge";
             const string procName = "PROC610";
 
@@ -34,9 +36,13 @@ namespace MqttBridge.Classes
                 if (process.Id == myProcess.Id)
                     continue;
                 ProcWasRunning = true;
+                Console.Write("Exit running instance...");
                 process.CloseMainWindow();
                 process.WaitForExit(2000);
                 process.Kill();
+                Console.Write("...waiting...");
+                Thread.Sleep(2000);
+                Console.WriteLine("...OK");
             }
             
             string myExe = myProcess.ProcessName;
@@ -77,7 +83,7 @@ namespace MqttBridge.Classes
             }
             Console.WriteLine();
             
-            if (!File.Exists(sysconfig))
+            if (!Directory.Exists(sysconfigpath))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Error - file not found: " + sysconfig);

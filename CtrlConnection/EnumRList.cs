@@ -67,11 +67,23 @@ namespace MqttBridge
         GrindingActDia = 6262,     //Aktueller Durchmesser Schleifscheibe
         GrindingActDressing = 6270,     //Aktueller Abrichtbetrag Schleifscheibe
 
-        GrindingActDressingCounter = 6285,     //Aktueller Abrichtzaehler Zyklus
-        GrindingActDressingMaxCounter = 6280,     //Aktueller Sollzyklus Aabrichten
+        GrindingActDressingCounter = 6280,     //Aktueller Abrichtzaehler Zyklus
+        GrindingActDressingMaxCounter = 6285,     //Aktueller Sollzyklus Aabrichten
         GrindingActDressingCounterTillDress = 6908,     //Restzähler Zyklen bis Abrichten
         GrindingDressAct = 6910,     //Abrichten
         GrindingNewTool = 6911,     //neue Schleifscheibe eingebaut
+
+        GrindingDressingCounterToolAct=6932,
+        GrindingDressingCounterToolMax = 6931,
+        GrindingDressingCounterToolRemaining = 6930,
+        
+        GrindingDressingCounterDresserAct = 6940,
+        GrindingDressingCounterDresserMax = 6941,
+        GrindingDressingCounterDresserRemaining = 6942,
+
+        GrindingCounterWorkpieceAct=6950,
+        GrindingCounterWorkpieceMax=6951,
+        GrindingCounterWorkpieceRemaining=6952,
 
     }
 }

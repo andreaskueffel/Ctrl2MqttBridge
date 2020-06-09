@@ -60,7 +60,7 @@ namespace MqttBridge
                     await Task.Run(async () => await initOPCUAClient());
                     Client = (IClient)opcUaConsoleClient;
                 }
-                catch { }
+                catch (Exception e) { System.Diagnostics.Trace.WriteLine(e.ToString()); }
             }
 
 

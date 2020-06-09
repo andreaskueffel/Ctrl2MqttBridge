@@ -138,7 +138,7 @@ namespace MqttBridge
             Console.WriteLine("2 - Discover endpoints of {0}.", endpointURL);
             exitCode = ExitCode.ErrorDiscoverEndpoints;
             var identity = new UserIdentity(Program.MqttBridgeSettings.OpcUaUsername,Program.MqttBridgeSettings.OpcUaPassword);
-            if (endpointURL.Contains("142.250"))
+            if (endpointURL.Contains("142.250")|| String.IsNullOrEmpty(Program.MqttBridgeSettings.OpcUaUsername))
             {
                 identity = new UserIdentity(new AnonymousIdentityToken());
                 haveAppCertificate = false;
