@@ -50,6 +50,11 @@ namespace MqttBridge
         Simulation = 936,       //Simulation aktiv an NC
         HelixCorrect = 937,       //Schrägungswinkelkorrektur beim Skiving
 
+        RckBallsizeRpTarget = 940, //Kugelmass Rohteil Soll
+        RckBallsizeRpActual = 941,   //Kugelmass Rohteil Ist
+        RckBallsizeFpTarget = 942,  //Kugelmass Fertigteil Soll
+        RckBallsizeFpActual = 943,  //Kugelmass Fertigteil Ist
+
         StateWPMeas = 1915,       //Status Einmitten
 
 
@@ -73,17 +78,17 @@ namespace MqttBridge
         GrindingDressAct = 6910,     //Abrichten
         GrindingNewTool = 6911,     //neue Schleifscheibe eingebaut
 
-        GrindingDressingCounterToolAct=6932,
+        GrindingDressingCounterToolAct = 6932,
         GrindingDressingCounterToolMax = 6931,
         GrindingDressingCounterToolRemaining = 6930,
-        
+
         GrindingDressingCounterDresserAct = 6940,
         GrindingDressingCounterDresserMax = 6941,
         GrindingDressingCounterDresserRemaining = 6942,
 
-        GrindingCounterWorkpieceAct=6950,
-        GrindingCounterWorkpieceMax=6951,
-        GrindingCounterWorkpieceRemaining=6952,
+        GrindingCounterWorkpieceAct = 6950,
+        GrindingCounterWorkpieceMax = 6951,
+        GrindingCounterWorkpieceRemaining = 6952,
 
     }
 }
