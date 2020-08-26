@@ -29,6 +29,9 @@ namespace MqttBridge.Classes
             //    FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(TargetPath + "\\MqttBridge.exe");
             //    if(fvi.FileVersion==Process.GetCurrentProcess())
             //        }
+
+            #region Laufenden Prozess beenden
+
             var myProcess = System.Diagnostics.Process.GetCurrentProcess();
             var processes = System.Diagnostics.Process.GetProcessesByName(myProcess.ProcessName);
             foreach (var process in processes)
@@ -44,7 +47,9 @@ namespace MqttBridge.Classes
                 Thread.Sleep(2000);
                 Console.WriteLine("...OK");
             }
-            
+            #endregion
+
+            #region Dateien kopieren (bei Bedarf)
             string myExe = myProcess.ProcessName;
             if (!myExe.EndsWith(".exe"))
                 myExe += ".exe";
@@ -81,15 +86,18 @@ namespace MqttBridge.Classes
 
                 }
             }
+            #endregion
+
             Console.WriteLine();
             
-            if (!Directory.Exists(sysconfigpath))
+            if (Functions.IsSiemens && !Directory.Exists(sysconfigpath))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Error - file not found: " + sysconfig);
                 Console.ForegroundColor = ConsoleColor.White;
                 return Errors.SysconfigNotFound;
             }
+            #region Alle sysconfig.inis suchen - inaktiv
             //Alle systemconfiguration.ini Dateien suchen und alle Prozesse auflisten?
             if (ScanDirectories)
             {
@@ -138,37 +146,76 @@ namespace MqttBridge.Classes
                     }
                 }
             }
-            
+            #endregion
+
             //Alternativ Prozessnummer/Name festlegen und IMMER den nehmen. 610?
-            Console.Write("Look for " + procName + " in "+sysconfig+"...");
-            IniFile iniFile = new IniFile(sysconfig);
-            string procValue = iniFile.GetValue("processes." + procName);
-            if (String.IsNullOrEmpty(procValue))
-                Console.WriteLine("NOT FOUND");
-            else
+            #region Systemconfiguration.ini anpassen
+            if (Functions.IsSiemens)
             {
-                Console.WriteLine("FOUND:");
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine(procValue);
-                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write("Look for " + procName + " in " + sysconfig + "...");
+                IniFile iniFile = new IniFile(sysconfig);
+                string procValue = iniFile.GetValue("processes." + procName);
+                if (String.IsNullOrEmpty(procValue))
+                    Console.WriteLine("NOT FOUND");
+                else
+                {
+                    Console.WriteLine("FOUND:");
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(procValue);
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                string newValue = "image:=\"" + TargetPath + "\\" + myExe + " -r\", process:=mqttbridge, startupTime:=afterServices, workingdir:=\"" + TargetPath + "\", background:=true";
+                if (newValue != procValue)
+                {
+                    Console.WriteLine("Setting new value for " + procName + "=");
+                    iniFile.SetValue("processes." + procName, newValue);
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine(newValue);
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine("Saving.");
+                    iniFile.Save();
+                }
+                else
+                {
+                    Console.WriteLine("Value for " + procName + " is OK");
+                }
             }
-            //string newValue = "process:=MQTTBRIDGE, cmdline:=\"" + exe + "\", deferred:=false, startupTime:=afterServices, oemframe:=true, processaffinitymask:=0xFFFFFFFF"; //windowname:=\"" + exe + "\",
-            //string newValue = "image:=\""+exe+" -r\", process:=mqttbridge, startupTime:=afterServices, workingdir:=\"" + exedir + "\", background:=true";
-            string newValue = "image:=\"" + TargetPath+"\\"+myExe + " -r\", process:=mqttbridge, startupTime:=afterServices, workingdir:=\"" + TargetPath + "\", background:=true";
-            if (newValue != procValue)
+            #endregion
+
+            #region Bei Rexroth in den Autostart legen
+            if(Functions.IsRexroth)
             {
-                Console.WriteLine("Setting new value for " + procName + "=");
-                iniFile.SetValue("processes." + procName, newValue);
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(newValue);
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine("Saving.");
-                iniFile.Save();
+                try
+                {
+                    string linkFileName = Environment.GetFolderPath(Environment.SpecialFolder.Startup)
+                                    + Path.DirectorySeparatorChar
+                                    + myExe.Replace(".exe", "")
+                                    + ".lnk";
+
+                    var shell = new IWshRuntimeLibrary.WshShell();
+                    var shortcut = shell.CreateShortcut(linkFileName) as IWshRuntimeLibrary.IWshShortcut;
+                    shortcut.TargetPath = TargetPath + Path.DirectorySeparatorChar + myExe;
+                    shortcut.Arguments = "-r";
+                    shortcut.WorkingDirectory = TargetPath;
+                    shortcut.WindowStyle = 7;
+                    shortcut.Save();
+                }
+                catch 
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Error - unable to create shortcut in startup");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    return Errors.ShortcutCreation;
+                }
+
+                var mqttBridgeSettings = Functions.ReadSettings(TargetPath + Path.DirectorySeparatorChar + Program.SettingsFilename);
+                mqttBridgeSettings.OpcUaMode = true;
+                mqttBridgeSettings.ServerName = "192.168.142.250";
+                Functions.SaveSettings(TargetPath + Path.DirectorySeparatorChar + Program.SettingsFilename, mqttBridgeSettings);
+
             }
-            else
-            {
-                Console.WriteLine("Value for "+procName+" is OK");
-            }
+            #endregion
+            
             Console.WriteLine();
             if (ProcWasRunning && !silent)
             {
@@ -191,6 +238,7 @@ namespace MqttBridge.Classes
             Console.WriteLine("Done- over and out.");
             return Errors.None;
         }
+
         static int cursorStart = 0;
         static List<string> GetFilesRecursive(string startDir)
         {
@@ -232,6 +280,7 @@ namespace MqttBridge.Classes
             public const int None = 0;
             public const int SysconfigNotFound = -1;
             public const int CopyFiles = -2;
+            public const int ShortcutCreation = -3;
 
         }
     }

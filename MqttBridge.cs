@@ -43,6 +43,7 @@ namespace MqttBridge
 
         public async Task StartAsync()
         {
+            Task opcUaTask = null;
             bool opcUaFallback = false;
             if (!Program.MqttBridgeSettings.OpcUaMode)
             {
@@ -57,10 +58,17 @@ namespace MqttBridge
             {
                 try
                 {
-                    await Task.Run(async () => await initOPCUAClient());
-                    Client = (IClient)opcUaConsoleClient;
+                    opcUaTask = Task.Run(async () => await initOPCUAClient());
+                    
                 }
                 catch (Exception e) { System.Diagnostics.Trace.WriteLine(e.ToString()); }
+            }
+
+            //Wait for OPC UA to connect
+            if (opcUaTask != null)
+            {
+                await opcUaTask;
+                Client = (IClient)opcUaConsoleClient;
             }
 
 
@@ -76,6 +84,7 @@ namespace MqttBridge
                 });
                 t.Change(1000, 10000);
             }
+
 
             System.Diagnostics.Trace.WriteLine("Started in " + (Program.MqttBridgeSettings.OpcUaMode ? "OPCUA" : "SIEMENSDLL") + "Mode", "MAIN");
 
@@ -292,7 +301,6 @@ namespace MqttBridge
         }
         async Task initOPCUAClient()
         {
-
             opcUaConsoleClient = new OpcUaConsoleClient("opc.tcp://" + Program.MqttBridgeSettings.ServerName + ":" + Program.MqttBridgeSettings.OpcUaPort, true, 5000);
             await opcUaConsoleClient.RunAsync();
             OpcUaConsoleClient.NewNotification += Client_NewNotification;

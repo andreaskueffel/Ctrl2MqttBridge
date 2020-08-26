@@ -1,11 +1,49 @@
-﻿using System;
+﻿using MqttBridge.Classes;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace MqttBridge
 {
     static class Functions
     {
+        public static bool IsSiemens { get { return Directory.Exists(@"C:\ProgramData\Siemens\MotionControl\"); } }
+        public static bool IsRexroth { get { return Directory.Exists(@"C:\Program Files (x86)\Rexroth\IndraWorks"); } }
+
+
+        public static MqttBridgeSettings ReadSettings(string SettingsFilename)
+        {
+            Console.WriteLine("Getting settings...");
+            string settings = "";
+            MqttBridgeSettings mqttBridgeSettings = new MqttBridgeSettings();
+            if (File.Exists(SettingsFilename))
+                settings = File.ReadAllText(SettingsFilename);
+            if (!String.IsNullOrEmpty(settings))
+                try
+                {
+                    mqttBridgeSettings = JsonConvert.DeserializeObject<MqttBridgeSettings>(settings);
+                    Console.WriteLine("Settings read.");
+                }
+                catch { }
+            return mqttBridgeSettings;
+
+        }
+        public static void SaveSettings(string SettingsFilename, MqttBridgeSettings mqttBridgeSettings)
+        {
+            Console.WriteLine("Getting settings...");
+            string settings = "";
+            if (File.Exists(SettingsFilename))
+                settings = File.ReadAllText(SettingsFilename);
+
+            string newSettings = JsonConvert.SerializeObject(mqttBridgeSettings, Formatting.Indented);
+            if (settings != newSettings)
+            {
+                Console.WriteLine("Settings changed, save to " + SettingsFilename);
+                File.WriteAllText(SettingsFilename, newSettings);
+            }
+        }
 
         public static string GetStringFromDataObject(object item)
         {

@@ -138,12 +138,26 @@ namespace MqttBridge
             Console.WriteLine("2 - Discover endpoints of {0}.", endpointURL);
             exitCode = ExitCode.ErrorDiscoverEndpoints;
             var identity = new UserIdentity(Program.MqttBridgeSettings.OpcUaUsername,Program.MqttBridgeSettings.OpcUaPassword);
-            if (endpointURL.Contains("142.250")|| String.IsNullOrEmpty(Program.MqttBridgeSettings.OpcUaUsername))
+            if (endpointURL.Contains("192.168.142.250")|| String.IsNullOrEmpty(Program.MqttBridgeSettings.OpcUaUsername))
             {
                 identity = new UserIdentity(new AnonymousIdentityToken());
                 haveAppCertificate = false;
             }
-            var selectedEndpoint = CoreClientUtils.SelectEndpoint(endpointURL, haveAppCertificate, 15000);
+            EndpointDescription selectedEndpoint=null;
+            while (selectedEndpoint == null)
+            {
+                try
+                {
+                    selectedEndpoint = CoreClientUtils.SelectEndpoint(endpointURL, haveAppCertificate, 2000);
+                }
+                catch (ServiceResultException) { }
+                if (selectedEndpoint == null)
+                {
+                    Console.Write(".");
+                    await Task.Delay(3000);
+                }
+            }
+
             Console.WriteLine("    Selected endpoint uses: {0}",
                 selectedEndpoint.SecurityPolicyUri.Substring(selectedEndpoint.SecurityPolicyUri.LastIndexOf('#') + 1));
 
@@ -225,11 +239,7 @@ namespace MqttBridge
 
         public async Task<uint> Subscribe(string rawNodeId, int interval)
         {
-            string nodeId = rawNodeId;
-            if (nodeId.StartsWith("channel/parameter/r"))
-                nodeId = "ns=2;s=" + nodeId.Replace("channel/parameter/r", "/Channel/Parameter/R");
-            if (!nodeId.StartsWith("ns=2")&& !nodeId.StartsWith("i="))
-                nodeId = "ns=2;s=/" + nodeId;
+            string nodeId = ReformatNodeId(rawNodeId);
             uint statuscode = await Task.Run(() =>
             {
 
@@ -274,11 +284,7 @@ namespace MqttBridge
 
         public async Task<uint> Unsubscribe(string rawNodeId)
         {
-            string nodeId = rawNodeId;
-            if (nodeId.StartsWith("channel/parameter/r"))
-                nodeId = "ns=2;s=" + nodeId.Replace("channel/parameter/r", "/Channel/Parameter/R");
-            if (!nodeId.StartsWith("ns=2") && !nodeId.StartsWith("i="))
-                nodeId = "ns=2;s=/" + nodeId;
+            string nodeId = ReformatNodeId(rawNodeId);
             uint statuscode = await Task.Run(() =>
             {
                 //Ungetestet !!
@@ -303,10 +309,7 @@ namespace MqttBridge
 
         public async Task<uint> Write(string nodeId, string payload)
         {
-            if (nodeId.StartsWith("channel/parameter/r"))
-                nodeId ="ns=2;s="+ nodeId.Replace("channel/parameter/r", "/Channel/Parameter/R");
-            if (!nodeId.StartsWith("ns=2") && !nodeId.StartsWith("i="))
-                nodeId = "ns=2;s=/" + nodeId;
+            nodeId = ReformatNodeId(nodeId);
             uint statusCode =await Task.Run(() =>
             {
                 DataValueCollection dataValues = new DataValueCollection();
@@ -334,11 +337,7 @@ namespace MqttBridge
 
         public async Task<string> Read(string nodeId)
         {
-            if (nodeId.StartsWith("channel/parameter/r"))
-                nodeId = "ns=2;s=" + nodeId.Replace("channel/parameter/r", "/Channel/Parameter/R");
-            if (!nodeId.StartsWith("ns=2") && !nodeId.StartsWith("i="))
-                nodeId = "ns=2;s=/" + nodeId;
-
+            nodeId = ReformatNodeId(nodeId);
             string ValueAsString = await Task.Run(() =>
             {
                 DataValueCollection dataValues = new DataValueCollection();
@@ -369,6 +368,15 @@ namespace MqttBridge
                     reconnectHandler.BeginReconnect(sender, ReconnectPeriod * 1000, Client_ReconnectComplete);
                 }
             }
+        }
+
+        string ReformatNodeId(string nodeId)
+        {
+            if (nodeId.StartsWith("channel/parameter/r"))
+                nodeId = "ns=2;s=" + nodeId.Replace("channel/parameter/r", "/Channel/Parameter/R");
+            if (!nodeId.StartsWith("ns=2") && !nodeId.StartsWith("i="))
+                nodeId = "ns=2;s=/" + nodeId;
+            return nodeId;
         }
 
         private void Client_ReconnectComplete(object sender, EventArgs e)

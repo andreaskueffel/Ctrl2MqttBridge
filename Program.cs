@@ -18,7 +18,7 @@ namespace MqttBridge
 {
     public class Program
     {
-        const string SettingsFilename = "MqttBridgeSettings.json";
+        public const string SettingsFilename = "MqttBridgeSettings.json";
 
         public static MqttBridgeSettings MqttBridgeSettings=new MqttBridgeSettings();
         static MqttBridge MqttBridge;
@@ -69,7 +69,7 @@ namespace MqttBridge
                 else
                 {
                     Console.WriteLine();
-                    Console.WriteLine("Installation finished. Do you want to run production mode NOW? [y/n]");
+                    Console.WriteLine("Installation finished. Do you want to run production mode NOW [Not Supported!]? [y/n]");
                     if (Console.ReadKey().Key != ConsoleKey.Y)
                         return;
                 }
@@ -86,25 +86,9 @@ namespace MqttBridge
 
         static async Task StartBridge()
         {
-            
 
-            Console.WriteLine("Getting settings...");
-            string settings = "";
-            if (File.Exists(SettingsFilename))
-                settings = File.ReadAllText(SettingsFilename);
-            if (!String.IsNullOrEmpty(settings)) try
-                {
-                    MqttBridgeSettings = JsonConvert.DeserializeObject<MqttBridgeSettings>(settings);
-                    Console.WriteLine("Settings read.");
-                }
-                catch { }
-
-            string newSettings = JsonConvert.SerializeObject(MqttBridgeSettings, Formatting.Indented);
-            if (settings != newSettings)
-            {
-                Console.WriteLine("Settings changed, save to " + SettingsFilename);
-                File.WriteAllText(SettingsFilename, newSettings);
-            }
+            MqttBridgeSettings = Functions.ReadSettings(SettingsFilename);
+            Functions.SaveSettings(SettingsFilename, MqttBridgeSettings);
             MqttBridge = new MqttBridge();
             await MqttBridge.StartAsync();
         }

@@ -18,7 +18,7 @@ namespace MqttBridge
         //Stub class to integrate common Code for client side
 
         const string mqttPrefix = "mqttbridge/";
-        static IManagedMqttClient mqttClient = null;
+        public static IManagedMqttClient mqttClient = null;
         static List<SubscriptionHelper> subscriptionHelpers = null;
         static object subscriptionHelpersLock = null;
         public static event EventHandler<bool> ConnectionHandler;
