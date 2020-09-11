@@ -21,6 +21,7 @@ namespace MqttBridge
     {
         IManagedMqttClient mqttClient;
         IMqttServer mqttServer;
+        IManagedMqttClient mqttClientExternal;
         DateTime StartTime;
         IClient Client;
         OperateNetService operateNetService;
@@ -74,6 +75,10 @@ namespace MqttBridge
 
             await Task.Run(async () => await initMqttServer());
             await Task.Run(async () => await initMqttClient());
+            if (Program.MqttBridgeSettings.EnableExternalBroker)
+            {
+                await Task.Run(async () => await initMqttClientExternal());
+            }
             if (Program.MqttBridgeSettings.EnableStatus)
             {
                 Timer t = new Timer(async (e) =>
@@ -81,6 +86,8 @@ namespace MqttBridge
 
                     string bridgeStatusJson = JsonConvert.SerializeObject(await GetBridgeStatus());
                     await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = "mqttbridge/" + "bridgeStatus", Payload = Encoding.UTF8.GetBytes(bridgeStatusJson) });
+                    if (mqttClientExternal != null && mqttClientExternal.IsConnected)
+                        await mqttClientExternal.PublishAsync(new MqttApplicationMessage() { Topic = "mqttbridge/" + "bridgeStatus", Payload = Encoding.UTF8.GetBytes(bridgeStatusJson) });
                 });
                 t.Change(1000, 10000);
             }
@@ -200,6 +207,32 @@ namespace MqttBridge
             };
         }
 
+        async Task initMqttClientExternal()
+        {
+            // Configure MQTT server.
+            var optionsBuilder = new ManagedMqttClientOptionsBuilder()
+                .WithClientOptions(new MqttClientOptionsBuilder()
+                .WithCleanSession(true)
+                .WithClientId(ClientId)
+                .WithCredentials("MqttBridge", "MqttBridge")
+                .WithTls()
+                .WithTcpServer(Program.MqttBridgeSettings.ExternalBrokerUrl.Split(':')[0], Convert.ToInt32(Program.MqttBridgeSettings.ExternalBrokerUrl.Split(':')[1])));
+
+
+            mqttClientExternal = new MqttFactory().CreateManagedMqttClient();
+            await mqttClientExternal.StartAsync(optionsBuilder.Build());
+            await mqttClientExternal.SubscribeAsync(new System.Collections.Generic.List<TopicFilter>() {
+                    (new TopicFilter() { Topic = "mqttbridge/#" })
+
+            });
+            mqttClientExternal.ApplicationMessageReceivedHandler = new MessageReceivedHandler()
+            {
+                mqttClient = mqttClientExternal,
+                Client = Client
+            };
+        }
+
+
         public class MessageReceivedHandler : IMqttApplicationMessageReceivedHandler
         {
             public IManagedMqttClient mqttClient { get; set; }
@@ -308,15 +341,20 @@ namespace MqttBridge
 
         private void Client_NewNotification(object sender, IMonitoredItem e)
         {
+            var message = new MqttApplicationMessage()
+            {
+                Topic = "mqttbridge/subscriptionnotification/" + e.DisplayName,
+                Payload = Encoding.UTF8.GetBytes(e.Value)
+            };
             if (mqttClient != null && mqttClient.IsConnected)
             {
-                mqttClient.PublishAsync(new MqttApplicationMessage()
-                {
-                    Topic = "mqttbridge/subscriptionnotification/" + e.DisplayName,
-                    Payload = Encoding.UTF8.GetBytes(e.Value)
-                });
-
+                mqttClient.PublishAsync(message);
             }
+            if (mqttClientExternal != null && mqttClientExternal.IsConnected)
+            {
+                mqttClientExternal.PublishAsync(message);
+            }
+
         }
     }
 }
