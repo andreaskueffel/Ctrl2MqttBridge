@@ -18,22 +18,25 @@ namespace MqttBridge
         }
 
         static string FileName = "mqtt.que";
+        static object FileLock = new object();
         public Task<IList<ManagedMqttApplicationMessage>> LoadQueuedMessagesAsync()
         {
             IList<ManagedMqttApplicationMessage> _return = new List<ManagedMqttApplicationMessage>();
-            if (!File.Exists(FileName))
-                return Task.FromResult(_return);
-            try
+            lock (FileLock)
             {
-                using (FileStream stream = new FileStream(FileName, FileMode.Open))
+                if (!File.Exists(FileName))
+                    return Task.FromResult(_return);
+                try
                 {
-                    DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(IList<ManagedMqttApplicationMessage>));
-                    _return = (IList<ManagedMqttApplicationMessage>)deserializer.ReadObject(stream);
-                    stream.Close();
+                    using (FileStream stream = new FileStream(FileName, FileMode.Open))
+                    {
+                        DataContractJsonSerializer deserializer = new DataContractJsonSerializer(typeof(IList<ManagedMqttApplicationMessage>));
+                        _return = (IList<ManagedMqttApplicationMessage>)deserializer.ReadObject(stream);
+                        stream.Close();
+                    }
                 }
+                catch { }
             }
-            catch { }
-
             return Task.FromResult(_return);
         }
 
@@ -41,18 +44,21 @@ namespace MqttBridge
         {
             return Task.Run(() =>
             {
-                if (messages.Count > 0 && !managedMqttClient.IsConnected)
+                lock (FileLock)
                 {
-                    using (FileStream stream = new FileStream(FileName, FileMode.Create))
+                    if (messages.Count > 0 && !managedMqttClient.IsConnected)
                     {
-                        DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(IList<ManagedMqttApplicationMessage>));
-                        js.WriteObject(stream, messages);
-                        stream.Close();
+                        using (FileStream stream = new FileStream(FileName, FileMode.Create))
+                        {
+                            DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(IList<ManagedMqttApplicationMessage>));
+                            js.WriteObject(stream, messages);
+                            stream.Close();
+                        }
                     }
-                }
-                else
-                {
-                    File.Delete(FileName);
+                    else
+                    {
+                        File.Delete(FileName);
+                    }
                 }
             });
         }
