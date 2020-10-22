@@ -190,12 +190,12 @@ namespace MqttBridge
         }
 
         #region MQTT Client
-        private static Storage Storage = null;
+        //private static Storage Storage = null;
 
         private async Task InitializeMqttClient(string server, int port, string clientID)
         {
             mqttClient = new MqttFactory().CreateManagedMqttClient();
-            Storage = new Storage(mqttClient);
+            //Storage = new Storage(mqttClient);
             var tlsoptions = new MqttClientOptionsBuilderTlsParameters();
             tlsoptions.CertificateValidationCallback = new Func<X509Certificate, X509Chain, SslPolicyErrors, IMqttClientOptions, bool>(ValidateServerCert);
             tlsoptions.UseTls = true;
@@ -204,7 +204,7 @@ namespace MqttBridge
             // Setup and start a managed MQTT client.
             var options = new ManagedMqttClientOptionsBuilder()
                 .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
-                .WithStorage(Storage)
+                //.WithStorage(Storage)
                 .WithClientOptions(new MqttClientOptionsBuilder()
                     .WithClientId(clientID + new Random().Next(10000, 10000000).ToString())
                     .WithTcpServer(server, port)
