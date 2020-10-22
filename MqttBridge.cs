@@ -106,6 +106,7 @@ namespace MqttBridge
             {
                 TimeSpan upTime = (DateTime.Now - StartTime);
                 string upTimeString = "P" + Math.Floor(upTime.TotalDays).ToString("0") + "DT" + upTime.Hours + "H" + upTime.Minutes + "M" + upTime.Seconds + "S";
+                string serverTimeString = DateTime.Now.ToString("o");
                 double CPUMillis = System.Diagnostics.Process.GetCurrentProcess().TotalProcessorTime.TotalMilliseconds;
 
                 double deltaCPUMillis = CPUMillis - lastCPUMillis;
@@ -123,6 +124,7 @@ namespace MqttBridge
                     ServerName = MachineName,
                     SubcribedItemsCount = Client != null ? Client.SubscribedItemsCount : 0,
                     Uptime = upTimeString,
+                    ServerTime = serverTimeString,
                     CPUUsage = cpu,
                     RAMUsage = ram,
                     ClientOK = Client != null && Client.IsConnected,
@@ -328,6 +330,7 @@ namespace MqttBridge
                 {
                     operateNetService = new OperateNetService();
                     OperateNetService.NewNotification += Client_NewNotification;
+                    OperateNetService.NewAlarmNotification += Client_NewAlarmNotification;
                 }
                 catch { }
             });
@@ -337,8 +340,25 @@ namespace MqttBridge
             opcUaConsoleClient = new OpcUaConsoleClient("opc.tcp://" + Program.MqttBridgeSettings.ServerName + ":" + Program.MqttBridgeSettings.OpcUaPort, true, 5000);
             await opcUaConsoleClient.RunAsync();
             OpcUaConsoleClient.NewNotification += Client_NewNotification;
+            OpcUaConsoleClient.NewAlarmNotification += Client_NewAlarmNotification;
         }
 
+        private void Client_NewAlarmNotification(object sender, IMonitoredItem e)
+        {
+            var message = new MqttApplicationMessage()
+            {
+                Topic = "mqttbridge/alarmnotification/" + e.DisplayName,
+                Payload = Encoding.UTF8.GetBytes(e.Value)
+            };
+            if (mqttClient != null && mqttClient.IsConnected)
+            {
+                mqttClient.PublishAsync(message);
+            }
+            if (mqttClientExternal != null && mqttClientExternal.IsConnected)
+            {
+                mqttClientExternal.PublishAsync(message);
+            }
+        }
         private void Client_NewNotification(object sender, IMonitoredItem e)
         {
             var message = new MqttApplicationMessage()

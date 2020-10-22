@@ -154,6 +154,7 @@
   <ItemGroup>
     <Compile Include="BridgeInstaller.cs" />
     <Compile Include="Classes\BridgeStatus.cs" />
+    <Compile Include="Classes\FilterDeclaration.cs" />
     <Compile Include="Classes\IniFile.cs" />
     <Compile Include="Classes\MonitoredItemOpcUa.cs" />
     <Compile Include="Classes\MqttBridgeSettings.cs" />
@@ -173,16 +174,16 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MQTTnet">
-      <Version>3.0.11</Version>
+      <Version>3.0.12</Version>
     </PackageReference>
     <PackageReference Include="MQTTnet.Extensions.ManagedClient">
-      <Version>3.0.11</Version>
+      <Version>3.0.12</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>12.0.3</Version>
     </PackageReference>
     <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua">
-      <Version>1.4.362.42</Version>
+      <Version>1.4.363.49</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
@@ -217,7 +218,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>del *Setup*.exe</PreBuildEvent>
+    <!--<PreBuildEvent>rm *Setup*.exe</PreBuildEvent>-->
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>if not $(ConfigurationName)==CreateSetup goto :endcreatesetup

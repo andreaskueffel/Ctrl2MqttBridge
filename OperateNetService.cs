@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.OleDb;
 using System.Threading.Tasks;
 using MqttBridge.Classes;
 using MqttBridge.Interfaces;
+using Newtonsoft.Json;
 using Siemens.Sinumerik.Operate.Services;
 
 
@@ -12,9 +14,13 @@ namespace MqttBridge
     {
 
         public static event EventHandler<IMonitoredItem> NewNotification;
+        public static event EventHandler<IMonitoredItem> NewAlarmNotification;
 
         DataSvc DataSvcReadWrite;
+        AlarmSvc AlarmService;
+        Guid AlarmServiceGuid;
 
+        Alarm[] Alarms;
         SortedList<string, MonitoredItemSiemens> MonitoredItems;
         object LockSubscribe = new object();
 
@@ -33,8 +39,11 @@ namespace MqttBridge
 
         public OperateNetService()
         {
-            DataSvcReadWrite = new DataSvc();
             MonitoredItems = new SortedList<string, MonitoredItemSiemens>();
+            DataSvcReadWrite = new DataSvc();
+            AlarmService = new AlarmSvc("deu"); //Wir abonnieren erstmal Deutsch
+            AlarmServiceGuid = AlarmService.Subscribe(AlarmListCallback);
+            
         }
 
         public async Task<string> Read(string Name)
@@ -177,6 +186,44 @@ namespace MqttBridge
                         OnNewNotification(i);
                 }
             }
+        }
+
+        private void AlarmListCallback(Guid guid, Alarm[] alarms)
+        {
+            if (AlarmServiceGuid.Equals(guid))
+            {
+                Alarms = alarms;
+                Alarm newestAlarm = new Alarm(new DateTime(1, 1, 1), "none") { Id = 0 };
+                Alarm oldestAlarm = new Alarm(new DateTime(2100, 1, 1), "none") { Id = 0 };
+                foreach (var alarm in alarms)
+                {
+                    if (alarm.TimeStamp > (new DateTime(2000, 1, 1)) && alarm.TimeStamp < oldestAlarm.TimeStamp)
+                        oldestAlarm = alarm;
+                    if(alarm.TimeStamp> newestAlarm.TimeStamp)
+                        newestAlarm = alarm;
+                }
+                if (oldestAlarm.Message == "none") //If we did not get one with valid timestamp use any of the ones without
+                {
+                    foreach (var alarm in alarms)
+                        if (alarm.TimeStamp < oldestAlarm.TimeStamp)
+                            oldestAlarm = alarm;
+                }
+                OnNewAlarmNotification("activeAlarmList", JsonConvert.SerializeObject(alarms));
+                OnNewAlarmNotification("activeAlarmId", newestAlarm.Id.ToString());
+                OnNewAlarmNotification("activeAlarmDetails", JsonConvert.SerializeObject(newestAlarm));
+                OnNewAlarmNotification("catchedAlarmId", oldestAlarm.Id.ToString());
+                OnNewAlarmNotification("catchedAlarmDetails", JsonConvert.SerializeObject(oldestAlarm));
+            }
+        }
+
+        private void OnNewAlarmNotification(string topic, string message)
+        {
+            if (NewAlarmNotification != null)
+                NewAlarmNotification(this, new MonitoredItemSiemens()
+                {
+                    DisplayName = topic,
+                    Value=message
+                });
         }
 
         private void OnNewNotification(KeyValuePair<string, MonitoredItemSiemens> i)

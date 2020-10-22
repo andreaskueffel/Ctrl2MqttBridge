@@ -2,9 +2,11 @@
 using MqttBridge.Interfaces;
 using Opc.Ua;
 using Opc.Ua.Client;
+using Opc.Ua.Client.Controls;
 using Opc.Ua.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +19,8 @@ namespace MqttBridge
 
 
         public static event EventHandler<IMonitoredItem> NewNotification;
+        public static event EventHandler<IMonitoredItem> NewAlarmNotification;
+
 
         const int ReconnectPeriod = 10;
         Session session;
@@ -25,6 +29,7 @@ namespace MqttBridge
         int clientRunTime = Timeout.Infinite;
         static bool autoAccept = false;
         static ExitCode exitCode;
+        static Subscription AlarmSubscription;
         static SortedList<int, Subscription> subscriptions;
         public OpcUaConsoleClient(string _endpointURL, bool _autoAccept, int _stopTimeout)
         {
@@ -234,9 +239,41 @@ namespace MqttBridge
             //subscription.Create();
 
             Console.WriteLine("8 - Running...");
+
+            Console.WriteLine("9 - Alarms/Events...TODO IMPLEMENT!!");
+            AlarmSubscription = new Subscription(session.DefaultSubscription) { PublishingInterval = 1000, MaxNotificationsPerPublish=1000, PublishingEnabled=true };
+            session.AddSubscription(AlarmSubscription);
+            AlarmSubscription.Create();
+            ExpandedNodeId nodes = null;
+            session.FetchTypeTree(nodes);
+            FilterDeclaration filterDeclaration = new FilterDeclaration();
+            FilterDeclaration.UpdateFilter(filterDeclaration, new NodeId(2041));
+            EventFilter eventFilter = new EventFilter();
+            eventFilter.AddSelectClause(new NodeId(2041), "BaseEventType", Attributes.Value);
+            //eventFilter.WhereClause.Elements.Add(new ContentFilterElement() { });
+            var AlarmItem = new Opc.Ua.Client.MonitoredItem(AlarmSubscription.DefaultItem)
+            {
+                DisplayName = "DiagnosisLogbook"/*.Substring(nodeId.LastIndexOf("=")*/,
+                StartNodeId = NodeId.Parse("ns=16;s=DiagnosisLogbook"),
+                AttributeId = Attributes.EventNotifier,
+                SamplingInterval = 0,
+                QueueSize = 1000,
+                Filter = eventFilter,
+                DiscardOldest =true
+            };
+            AlarmItem.Notification += (item, eventargs) => {
+                Trace.WriteLine(item.DisplayName + " - " + eventargs.NotificationValue.ToString());
+            };
+            AlarmSubscription.AddItem(AlarmItem);
+
+            AlarmSubscription.ApplyChanges();
+            Console.WriteLine("10 - Done.");
+
             exitCode = ExitCode.ErrorRunning;
         }
 
+
+        
         public async Task<uint> Subscribe(string rawNodeId, int interval)
         {
             string nodeId = ReformatNodeId(rawNodeId);
@@ -259,7 +296,7 @@ namespace MqttBridge
                 var list = new List<Opc.Ua.Client.MonitoredItem> {
                 new Opc.Ua.Client.MonitoredItem(subscription.DefaultItem)
                 {
-                    DisplayName = rawNodeId/*.Substring(nodeId.LastIndexOf("=")*/, StartNodeId = NodeId.Parse(nodeId)
+                    DisplayName = rawNodeId/*.Substring(nodeId.LastIndexOf("=")*/, StartNodeId = NodeId.Parse(nodeId), SamplingInterval=interval
                 }
             };
                 list.ForEach(i => i.Notification += OnNotification);
