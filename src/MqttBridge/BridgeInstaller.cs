@@ -187,18 +187,20 @@ namespace MqttBridge.Classes
             {
                 try
                 {
-                    string linkFileName = Environment.GetFolderPath(Environment.SpecialFolder.Startup)
-                                    + Path.DirectorySeparatorChar
-                                    + myExe.Replace(".exe", "")
-                                    + ".lnk";
+                    //string linkFileName = Environment.GetFolderPath(Environment.SpecialFolder.Startup)
+                    //                + Path.DirectorySeparatorChar
+                    //                + myExe.Replace(".exe", "")
+                    //                + ".lnk";
 
-                    var shell = new IWshRuntimeLibrary.WshShell();
-                    var shortcut = shell.CreateShortcut(linkFileName) as IWshRuntimeLibrary.IWshShortcut;
-                    shortcut.TargetPath = TargetPath + Path.DirectorySeparatorChar + myExe;
-                    shortcut.Arguments = "-r";
-                    shortcut.WorkingDirectory = TargetPath;
-                    shortcut.WindowStyle = 7;
-                    shortcut.Save();
+                    //var shell = new IWshRuntimeLibrary.WshShell();
+                    //var shortcut = shell.CreateShortcut(linkFileName) as IWshRuntimeLibrary.IWshShortcut;
+                    //shortcut.TargetPath = TargetPath + Path.DirectorySeparatorChar + myExe;
+                    //shortcut.Arguments = "-r";
+                    //shortcut.WorkingDirectory = TargetPath;
+                    //shortcut.WindowStyle = 7;
+                    //shortcut.Save();
+                    //ToDo: Reimplement shortcut creation
+                    throw new NotImplementedException("Implement shortcut creation");
                 }
                 catch 
                 {
