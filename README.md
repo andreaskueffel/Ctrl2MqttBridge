@@ -1,6 +1,6 @@
 
 [![NuGet Badge](https://buildstats.info/nuget/Ctrl2MqttClient)](https://www.nuget.org/packages/Ctrl2MqttClient)
-https://github.com/andreaskueffel/Ctrl2MqttBridge/workflows/BuildAndDeploy/badge.svg
+![BuildAndDeploy](https://github.com/andreaskueffel/Ctrl2MqttBridge/workflows/BuildAndDeploy/badge.svg)
 
 # Ctrl2MqttBridge
 
