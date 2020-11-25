@@ -11,13 +11,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MqttBridge
+namespace Ctrl2MqttBridge
 {
     public class BridgeConnection : IDisposable
     {
         //Stub class to integrate common Code for client side
 
-        const string mqttPrefix = "mqttbridge/";
+        const string mqttPrefix = "ctrl2mqttbridge/";
         public static IManagedMqttClient mqttClient = null;
         static List<SubscriptionHelper> subscriptionHelpers = null;
         static object subscriptionHelpersLock = null;
@@ -209,8 +209,7 @@ namespace MqttBridge
                     .WithClientId(clientID + new Random().Next(10000, 10000000).ToString())
                     .WithTcpServer(server, port)
                     //.WithTls(tlsoptions)
-                    .WithCredentials("HoningHMI", "HoningHMI")
-                    //.WithCredentials("honinghmi", "6AFLN1KO7f")
+                    .WithCredentials("Ctrl2MqttBridge", "Ctrl2MqttBridge")
                     .WithWillMessage(new MqttApplicationMessage()
                     {
                         Topic = mqttPrefix + clientID,

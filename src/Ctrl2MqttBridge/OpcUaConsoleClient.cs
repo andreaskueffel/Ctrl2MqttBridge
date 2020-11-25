@@ -1,5 +1,5 @@
-﻿using MqttBridge.Classes;
-using MqttBridge.Interfaces;
+﻿using Ctrl2MqttBridge.Classes;
+using Ctrl2MqttBridge.Interfaces;
 using Opc.Ua;
 using Opc.Ua.Client;
 using Opc.Ua.Client.Controls;
@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MqttBridge
+namespace Ctrl2MqttBridge
 {
     public class OpcUaConsoleClient : IClient
     {
@@ -121,7 +121,7 @@ namespace MqttBridge
             //var config = new ApplicationConfiguration()
             //{
             //    ApplicationName = application.ApplicationName,
-            //    ApplicationUri = "urn:localhost:Praewema:MqttBridge",
+            //    ApplicationUri = "urn:localhost:Praewema:Ctrl2MqttBridge",
             //    ProductUri = "https://github.org/andreaskueffel/mqttbridge",
             //    ApplicationType = ApplicationType.Client,
             //    ClientConfiguration = new ClientConfiguration()
@@ -137,7 +137,7 @@ namespace MqttBridge
             //        {
             //            StoreType = "X509Store",
             //            StorePath = "CurrentUser\\My",
-            //            SubjectName = "CN=MqttBridge UA Client, C=DE, S=Hessen, O=Praewema, DC=localhost"
+            //            SubjectName = "CN=Ctrl2MqttBridge UA Client, C=DE, S=Hessen, O=Praewema, DC=localhost"
             //        },
             //        TrustedIssuerCertificates = new CertificateTrustList() { StoreType = "Directory", StorePath = "%LocalApplicationData%/OPC Foundation/pki/issuer" },
             //        TrustedPeerCertificates = new CertificateTrustList() { StoreType = "Directory", StorePath = "%LocalApplicationData%/OPC Foundation/pki/trusted" },
@@ -148,7 +148,7 @@ namespace MqttBridge
             //    TransportQuotas = new TransportQuotas(),
             //    TraceConfiguration = new TraceConfiguration()
             //    {
-            //        OutputFilePath="MqttBridge.Opc.Ua.CoreClient.log",
+            //        OutputFilePath="Ctrl2MqttBridge.Opc.Ua.CoreClient.log",
             //        DeleteOnLoad=true,
             //        TraceMasks=519
             //    },
@@ -179,8 +179,8 @@ namespace MqttBridge
 
             Console.WriteLine("2 - Discover endpoints of {0}.", endpointURL);
             exitCode = ExitCode.ErrorDiscoverEndpoints;
-            var identity = new UserIdentity(Program.MqttBridgeSettings.OpcUaUsername,Program.MqttBridgeSettings.OpcUaPassword);
-            if (endpointURL.Contains("192.168.142.250")|| String.IsNullOrEmpty(Program.MqttBridgeSettings.OpcUaUsername))
+            var identity = new UserIdentity(Program.Ctrl2MqttBridgeSettings.OpcUaUsername,Program.Ctrl2MqttBridgeSettings.OpcUaPassword);
+            if (endpointURL.Contains("192.168.142.250")|| String.IsNullOrEmpty(Program.Ctrl2MqttBridgeSettings.OpcUaUsername))
             {
                 identity = new UserIdentity(new AnonymousIdentityToken());
                 haveAppCertificate = false;

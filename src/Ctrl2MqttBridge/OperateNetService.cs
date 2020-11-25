@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Data.OleDb;
 using System.Threading.Tasks;
-using MqttBridge.Classes;
-using MqttBridge.Interfaces;
+using Ctrl2MqttBridge.Classes;
+using Ctrl2MqttBridge.Interfaces;
 using Newtonsoft.Json;
 using Siemens.Sinumerik.Operate.Services;
 
 
-namespace MqttBridge
+namespace Ctrl2MqttBridge
 {
     public class OperateNetService : IClient, IDisposable
     {

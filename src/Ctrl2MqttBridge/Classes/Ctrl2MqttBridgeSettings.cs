@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MqttBridge.Classes
+namespace Ctrl2MqttBridge.Classes
 {
-    public class MqttBridgeSettings
+    public class Ctrl2MqttBridgeSettings
     {
         public bool OpcUaMode { get; set; } = false;
         public string ServerName { get; set; } = "192.168.214.241";
@@ -20,7 +20,7 @@ namespace MqttBridge.Classes
 
 
 
-        public MqttBridgeSettings() { }
+        public Ctrl2MqttBridgeSettings() { }
 
     }
 }

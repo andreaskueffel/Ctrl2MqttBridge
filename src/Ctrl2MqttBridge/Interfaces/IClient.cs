@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MqttBridge.Interfaces
+namespace Ctrl2MqttBridge.Interfaces
 {
     public interface IClient
     {

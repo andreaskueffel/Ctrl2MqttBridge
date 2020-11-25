@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MqttBridge.Classes
+namespace Ctrl2MqttBridge.Classes
 {
     public static class BridgeInstaller
     {
@@ -19,16 +19,8 @@ namespace MqttBridge.Classes
             //const string sysconfig = @"\\192.168.214.241\c$\ProgramData\Siemens\MotionControl\oem\sinumerik\hmi\cfg\systemconfiguration.ini";
             const string sysconfig = @"C:\ProgramData\Siemens\MotionControl\oem\sinumerik\hmi\cfg\systemconfiguration.ini";
             const string sysconfigpath = @"C:\ProgramData\Siemens\MotionControl\oem\sinumerik\hmi\cfg";
-            const string TargetPath = @"C:\MqttBridge";
+            const string TargetPath = @"C:\Ctrl2MqttBridge";
             const string procName = "PROC610";
-
-            //Wenn der Prozess läuft erstmal beenden?
-            //Erstmal Version prüfen und sehen ob ein Update nötig ist!
-            //Ansonsten auch Meldung bringen das Operate neu gestartet werden muss!!
-            //if (File.Exists(TargetPath + "\\MqttBridge.exe")) {
-            //    FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(TargetPath + "\\MqttBridge.exe");
-            //    if(fvi.FileVersion==Process.GetCurrentProcess())
-            //        }
 
             #region Laufenden Prozess beenden
 
@@ -53,7 +45,7 @@ namespace MqttBridge.Classes
             string myExe = myProcess.ProcessName;
             if (!myExe.EndsWith(".exe"))
                 myExe += ".exe";
-            string exe = Path.GetFullPath(myExe);//"MqttBridge.exe");
+            string exe = Path.GetFullPath(myExe);
             string exedir = Path.GetDirectoryName(exe);
             
             //Wenn setup gestartet aus Temp dir kopieren, sonst nicht
@@ -164,7 +156,7 @@ namespace MqttBridge.Classes
                     Console.WriteLine(procValue);
                     Console.ForegroundColor = ConsoleColor.White;
                 }
-                string newValue = "image:=\"" + TargetPath + "\\" + myExe + " -r\", process:=mqttbridge, startupTime:=afterServices, workingdir:=\"" + TargetPath + "\", background:=true";
+                string newValue = "image:=\"" + TargetPath + "\\" + myExe + " -r\", process:=ctrl2mqttbridge, startupTime:=afterServices, workingdir:=\"" + TargetPath + "\", background:=true";
                 if (newValue != procValue)
                 {
                     Console.WriteLine("Setting new value for " + procName + "=");
@@ -221,7 +213,7 @@ namespace MqttBridge.Classes
             Console.WriteLine();
             if (ProcWasRunning && !silent)
             {
-                Console.WriteLine("MqttBridge was running before install.");
+                Console.WriteLine("Ctrl2MqttBridge was running before install.");
                 Console.Write("Shall i try to restart the service? [y/n]");
                 var key = Console.ReadKey();
                 if(key.Key== ConsoleKey.Y)

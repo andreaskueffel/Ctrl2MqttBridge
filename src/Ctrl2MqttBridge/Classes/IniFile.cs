@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-namespace MqttBridge.Classes
+namespace Ctrl2MqttBridge.Classes
 {
 
     public class IniFile

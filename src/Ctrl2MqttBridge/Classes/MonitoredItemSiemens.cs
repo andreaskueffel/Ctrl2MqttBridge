@@ -1,10 +1,10 @@
-﻿using MqttBridge.Interfaces;
+﻿using Ctrl2MqttBridge.Interfaces;
 using Siemens.Sinumerik.Operate.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MqttBridge.Classes
+namespace Ctrl2MqttBridge.Classes
 {
    public class MonitoredItemSiemens: IMonitoredItem
     {

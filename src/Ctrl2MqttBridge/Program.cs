@@ -1,5 +1,5 @@
-﻿using MqttBridge.Classes;
-using MqttBridge.Interfaces;
+﻿using Ctrl2MqttBridge.Classes;
+using Ctrl2MqttBridge.Interfaces;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Client.Options;
@@ -14,14 +14,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MqttBridge
+namespace Ctrl2MqttBridge
 {
     public class Program
     {
         public const string SettingsFilename = "MqttBridgeSettings.json";
 
-        public static MqttBridgeSettings MqttBridgeSettings=new MqttBridgeSettings();
-        static MqttBridge MqttBridge;
+        public static Ctrl2MqttBridgeSettings Ctrl2MqttBridgeSettings=new Ctrl2MqttBridgeSettings();
+        static Ctrl2MqttBridge Ctrl2MqttBridge;
 
         static void Main(string[] args)
         {
@@ -30,7 +30,7 @@ namespace MqttBridge
             bool RunOnly = true;
 
             Console.WriteLine("-----------------------------------------------------------");
-            Console.WriteLine("MQTT - Bridge                              PRÄWEMA (c) 2020");
+            Console.WriteLine("Ctrl2MQTT - Bridge                         PRÄWEMA (c) 2020");
             Console.WriteLine("Version: " + typeof(Program).Assembly.GetName().Version.ToString());
             Console.WriteLine("");
             Console.WriteLine("-----------------------------------------------------------");
@@ -88,10 +88,10 @@ namespace MqttBridge
         static async Task StartBridge()
         {
 
-            MqttBridgeSettings = Functions.ReadSettings(SettingsFilename);
-            Functions.SaveSettings(SettingsFilename, MqttBridgeSettings);
-            MqttBridge = new MqttBridge();
-            await MqttBridge.StartAsync();
+            Ctrl2MqttBridgeSettings = Functions.ReadSettings(SettingsFilename);
+            Functions.SaveSettings(SettingsFilename, Ctrl2MqttBridgeSettings);
+            Ctrl2MqttBridge = new Ctrl2MqttBridge();
+            await Ctrl2MqttBridge.StartAsync();
         }
 
         private static void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs e)

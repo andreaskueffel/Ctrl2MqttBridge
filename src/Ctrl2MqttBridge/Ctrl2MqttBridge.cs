@@ -1,5 +1,5 @@
-﻿using MqttBridge.Classes;
-using MqttBridge.Interfaces;
+﻿using Ctrl2MqttBridge.Classes;
+using Ctrl2MqttBridge.Interfaces;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Client.Options;
@@ -15,10 +15,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MqttBridge
+namespace Ctrl2MqttBridge
 {
-    public class MqttBridge
+    public class Ctrl2MqttBridge
     {
+        const string mqttPrefix = "ctrl2mqttbridge/";
         IManagedMqttClient mqttClient;
         IMqttServer mqttServer;
         IManagedMqttClient mqttClientExternal;
@@ -33,12 +34,12 @@ namespace MqttBridge
         Dictionary<string, bool> ClientRights;
         string ClientId;
 
-        public MqttBridge()
+        public Ctrl2MqttBridge()
         {
             StartTime = DateTime.Now;
             MachineName = Environment.MachineName;
             ClientRights = new Dictionary<string, bool>();
-            ClientId = "praekon_mqttBridge_" + StartTime.ToString("yyyyMMddHHmmss");
+            ClientId = "praekon_ctrl2mqttBridge_" + StartTime.ToString("yyyyMMddHHmmss");
             //MqttServerThread = new Thread(new ThreadStart(()=>initMqttServer()));
         }
 
@@ -46,16 +47,16 @@ namespace MqttBridge
         {
             Task opcUaTask = null;
             bool opcUaFallback = false;
-            if (!Program.MqttBridgeSettings.OpcUaMode)
+            if (!Program.Ctrl2MqttBridgeSettings.OpcUaMode)
             {
                 try
                 {
                     await Task.Run(async () => await initOperateNetService());
                     Client = (IClient)operateNetService;
                 }
-                catch { opcUaFallback = true; Program.MqttBridgeSettings.OpcUaMode = true; }
+                catch { opcUaFallback = true; Program.Ctrl2MqttBridgeSettings.OpcUaMode = true; }
             }
-            if (Program.MqttBridgeSettings.OpcUaMode || opcUaFallback)
+            if (Program.Ctrl2MqttBridgeSettings.OpcUaMode || opcUaFallback)
             {
                 try
                 {
@@ -75,25 +76,25 @@ namespace MqttBridge
 
             await Task.Run(async () => await initMqttServer());
             await Task.Run(async () => await initMqttClient());
-            if (Program.MqttBridgeSettings.EnableExternalBroker)
+            if (Program.Ctrl2MqttBridgeSettings.EnableExternalBroker)
             {
                 await Task.Run(async () => await initMqttClientExternal());
             }
-            if (Program.MqttBridgeSettings.EnableStatus)
+            if (Program.Ctrl2MqttBridgeSettings.EnableStatus)
             {
                 Timer t = new Timer(async (e) =>
                 {
 
                     string bridgeStatusJson = JsonConvert.SerializeObject(await GetBridgeStatus());
-                    await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = "mqttbridge/" + "bridgeStatus", Payload = Encoding.UTF8.GetBytes(bridgeStatusJson) });
+                    await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = mqttPrefix + "bridgeStatus", Payload = Encoding.UTF8.GetBytes(bridgeStatusJson) });
                     if (mqttClientExternal != null && mqttClientExternal.IsConnected)
-                        await mqttClientExternal.PublishAsync(new MqttApplicationMessage() { Topic = "mqttbridge/" + "bridgeStatus", Payload = Encoding.UTF8.GetBytes(bridgeStatusJson) });
+                        await mqttClientExternal.PublishAsync(new MqttApplicationMessage() { Topic = mqttPrefix + "bridgeStatus", Payload = Encoding.UTF8.GetBytes(bridgeStatusJson) });
                 });
                 t.Change(1000, 10000);
             }
 
 
-            System.Diagnostics.Trace.WriteLine("Started in " + (Program.MqttBridgeSettings.OpcUaMode ? "OPCUA" : "SIEMENSDLL") + "Mode", "MAIN");
+            System.Diagnostics.Trace.WriteLine("Started in " + (Program.Ctrl2MqttBridgeSettings.OpcUaMode ? "OPCUA" : "SIEMENSDLL") + "Mode", "MAIN");
 
         }
 
@@ -120,7 +121,7 @@ namespace MqttBridge
                 return new BridgeStatus()
                 {
                     ClientCount = ((await mqttServer.GetClientStatusAsync()).Count) - 1,
-                    OperationMode = Client != null ? (Program.MqttBridgeSettings.OpcUaMode ? "OPCUA" : "OperateNetService") : "NO_CTRL_CONNECTION",
+                    OperationMode = Client != null ? (Program.Ctrl2MqttBridgeSettings.OpcUaMode ? "OPCUA" : "OperateNetService") : "NO_CTRL_CONNECTION",
                     ServerName = MachineName,
                     SubcribedItemsCount = Client != null ? Client.SubscribedItemsCount : 0,
                     Uptime = upTimeString,
@@ -157,10 +158,8 @@ namespace MqttBridge
                     {
 
                     }
-                    if (c.Username == "HoningHMI" && c.Password == "HoningHMI")
+                    if (c.Username == "Ctrl2MqttBridge" && c.Password == "Ctrl2MqttBridge")
                     {
-                        //c.ReasonCode = MQTTnet.Protocol.MqttConnectReasonCode.BadUserNameOrPassword;
-                        //return;
                         canPublish = true;
                     }
                     ClientRights.Add(c.ClientId, canPublish);
@@ -178,7 +177,7 @@ namespace MqttBridge
                 {
                     s.AcceptSubscription = true;
                 })
-                .WithDefaultEndpointPort(Program.MqttBridgeSettings.MqttPort);
+                .WithDefaultEndpointPort(Program.Ctrl2MqttBridgeSettings.MqttPort);
             
 
             mqttServer = new MqttFactory().CreateMqttServer();
@@ -192,8 +191,8 @@ namespace MqttBridge
                 .WithClientOptions(new MqttClientOptionsBuilder()
                 .WithCleanSession(true)
                 .WithClientId(ClientId)
-                .WithCredentials("MqttBridge", "MqttBridge")
-                .WithTcpServer("localhost", Program.MqttBridgeSettings.MqttPort));
+                .WithCredentials("Ctrl2MqttBridge", "Ctrl2MqttBridge")
+                .WithTcpServer("localhost", Program.Ctrl2MqttBridgeSettings.MqttPort));
                 
 
             mqttClient = new MqttFactory().CreateManagedMqttClient();
@@ -216,15 +215,14 @@ namespace MqttBridge
                 .WithClientOptions(new MqttClientOptionsBuilder()
                 .WithCleanSession(true)
                 .WithClientId(ClientId)
-                .WithCredentials("MqttBridge", "MqttBridge")
                 .WithTls()
-                .WithTcpServer(Program.MqttBridgeSettings.ExternalBrokerUrl.Split(':')[0], Convert.ToInt32(Program.MqttBridgeSettings.ExternalBrokerUrl.Split(':')[1])));
+                .WithTcpServer(Program.Ctrl2MqttBridgeSettings.ExternalBrokerUrl.Split(':')[0], Convert.ToInt32(Program.Ctrl2MqttBridgeSettings.ExternalBrokerUrl.Split(':')[1])));
 
 
             mqttClientExternal = new MqttFactory().CreateManagedMqttClient();
             await mqttClientExternal.StartAsync(optionsBuilder.Build());
             await mqttClientExternal.SubscribeAsync(new System.Collections.Generic.List<TopicFilter>() {
-                    (new TopicFilter() { Topic = "mqttbridge/#" })
+                    (new TopicFilter() { Topic = mqttPrefix + "#" })
 
             });
             mqttClientExternal.ApplicationMessageReceivedHandler = new MessageReceivedHandler()
@@ -250,9 +248,9 @@ namespace MqttBridge
                     System.Diagnostics.Trace.WriteLine(eventArgs.ApplicationMessage.Topic + " = " + eventArgs.ApplicationMessage.ConvertPayloadToString(), "MQTT Message Received");
 #endif
                     //WRITE
-                    if (eventArgs.ApplicationMessage.Topic.StartsWith("mqttbridge/write/"))
+                    if (eventArgs.ApplicationMessage.Topic.StartsWith(mqttPrefix + "write/"))
                     {
-                        string subTopic = eventArgs.ApplicationMessage.Topic.Substring("mqttbridge/write/".Length);
+                        string subTopic = eventArgs.ApplicationMessage.Topic.Substring((mqttPrefix + "write/").Length);
                         try
                         {
                             uint resultCode = 1;
@@ -261,9 +259,9 @@ namespace MqttBridge
                                 resultCode = 2;
                             else
                                 resultCode = await Client.Write(subTopic, payload);
-                            await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = ("mqttbridge/writeresult/" + subTopic), Payload = Encoding.UTF8.GetBytes(resultCode.ToString()) });
+                            await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = (mqttPrefix + "writeresult/" + subTopic), Payload = Encoding.UTF8.GetBytes(resultCode.ToString()) });
                             if (resultCode == 0)
-                                await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = ("mqttbridge/writevalue/" + subTopic), Payload = Encoding.UTF8.GetBytes(payload) });
+                                await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = (mqttPrefix + "writevalue/" + subTopic), Payload = Encoding.UTF8.GetBytes(payload) });
                         }
                         catch (Exception exc)
                         {
@@ -271,14 +269,14 @@ namespace MqttBridge
                         }
                     }
                     //READ
-                    if (eventArgs.ApplicationMessage.Topic.StartsWith("mqttbridge/read/"))
+                    if (eventArgs.ApplicationMessage.Topic.StartsWith(mqttPrefix + "read/"))
                     {
-                        string subTopic = eventArgs.ApplicationMessage.Topic.Substring("mqttbridge/read/".Length);
+                        string subTopic = eventArgs.ApplicationMessage.Topic.Substring((mqttPrefix + "read/").Length);
                         try
                         {
                             string payload = eventArgs.ApplicationMessage.ConvertPayloadToString();
                             string result = await Client.Read(subTopic);
-                            await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = ("mqttbridge/readresult/" + subTopic), Payload = Encoding.UTF8.GetBytes(result) });
+                            await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = (mqttPrefix + "readresult/" + subTopic), Payload = Encoding.UTF8.GetBytes(result) });
                         }
                         catch (Exception exc)
                         {
@@ -286,9 +284,9 @@ namespace MqttBridge
                         }
                     }
                     //SUBSCRIBE
-                    if (eventArgs.ApplicationMessage.Topic.StartsWith("mqttbridge/subscribe/"))
+                    if (eventArgs.ApplicationMessage.Topic.StartsWith(mqttPrefix + "subscribe/"))
                     {
-                        string subTopic = eventArgs.ApplicationMessage.Topic.Substring("mqttbridge/subscribe/".Length);
+                        string subTopic = eventArgs.ApplicationMessage.Topic.Substring((mqttPrefix + "subscribe/").Length);
                         try
                         {
                             string payload = eventArgs.ApplicationMessage.ConvertPayloadToString();
@@ -302,9 +300,9 @@ namespace MqttBridge
 
                     }
                     //UNSUBSCRIBE
-                    if (eventArgs.ApplicationMessage.Topic.StartsWith("mqttbridge/unsubscribe/"))
+                    if (eventArgs.ApplicationMessage.Topic.StartsWith(mqttPrefix + "unsubscribe/"))
                     {
-                        string subTopic = eventArgs.ApplicationMessage.Topic.Substring("mqttbridge/unsubscribe/".Length);
+                        string subTopic = eventArgs.ApplicationMessage.Topic.Substring((mqttPrefix + "unsubscribe/").Length);
                         try
                         {
                             string payload = eventArgs.ApplicationMessage.ConvertPayloadToString();
@@ -333,7 +331,7 @@ namespace MqttBridge
         }
         async Task initOPCUAClient()
         {
-            opcUaConsoleClient = new OpcUaConsoleClient("opc.tcp://" + Program.MqttBridgeSettings.ServerName + ":" + Program.MqttBridgeSettings.OpcUaPort, true, 5000);
+            opcUaConsoleClient = new OpcUaConsoleClient("opc.tcp://" + Program.Ctrl2MqttBridgeSettings.ServerName + ":" + Program.Ctrl2MqttBridgeSettings.OpcUaPort, true, 5000);
             await opcUaConsoleClient.RunAsync();
             OpcUaConsoleClient.NewNotification += Client_NewNotification;
             OpcUaConsoleClient.NewAlarmNotification += Client_NewAlarmNotification;
@@ -343,7 +341,7 @@ namespace MqttBridge
         {
             var message = new MqttApplicationMessage()
             {
-                Topic = "mqttbridge/alarmnotification/" + e.DisplayName,
+                Topic = mqttPrefix + "alarmnotification/" + e.DisplayName,
                 Payload = Encoding.UTF8.GetBytes(e.Value)
             };
             if (mqttClient != null && mqttClient.IsConnected)
@@ -359,7 +357,7 @@ namespace MqttBridge
         {
             var message = new MqttApplicationMessage()
             {
-                Topic = "mqttbridge/subscriptionnotification/" + e.DisplayName,
+                Topic = mqttPrefix + "subscriptionnotification/" + e.DisplayName,
                 Payload = Encoding.UTF8.GetBytes(e.Value)
             };
             if (mqttClient != null && mqttClient.IsConnected)

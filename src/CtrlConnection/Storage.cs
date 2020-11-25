@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Runtime.Serialization.Json;
 
-namespace MqttBridge
+namespace Ctrl2MqttBridge
 {
     class Storage : IManagedMqttClientStorage
     {

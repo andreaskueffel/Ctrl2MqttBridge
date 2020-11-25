@@ -1,4 +1,4 @@
-# MqttBridge
+# Ctrl2MqttBridge
 
 Provides connectivity to an industrial controller via MQTT
 Used in production environment to connect Siemens 840dsl
@@ -23,9 +23,9 @@ and Rexroth MTX (CML85) controllers to HMI software.
 - or via OperateNET library (provided by Siemens)
 - To use OperateNET library the "Siemens.Sinumerik.Operate.Services.dll" files are required in External directory during build
 
-## Usage of MqttBridge / CtrlConnection
+## Usage of Ctrl2MqttBridge / CtrlConnection
 
-### MqttBridge
+### Ctrl2MqttBridge
 
 - Bridge is either installed via the SFX installer or the -i switch
 - It integrates in Sinumerik Operate PROC610 and runs in the background

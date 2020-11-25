@@ -1,11 +1,11 @@
-﻿using MqttBridge.Classes;
+﻿using Ctrl2MqttBridge.Classes;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace MqttBridge
+namespace Ctrl2MqttBridge
 {
     static class Functions
     {
@@ -13,24 +13,24 @@ namespace MqttBridge
         public static bool IsRexroth { get { return Directory.Exists(@"C:\Program Files (x86)\Rexroth\IndraWorks"); } }
 
 
-        public static MqttBridgeSettings ReadSettings(string SettingsFilename)
+        public static Ctrl2MqttBridgeSettings ReadSettings(string SettingsFilename)
         {
             Console.WriteLine("Getting settings...");
             string settings = "";
-            MqttBridgeSettings mqttBridgeSettings = new MqttBridgeSettings();
+            Ctrl2MqttBridgeSettings mqttBridgeSettings = new Ctrl2MqttBridgeSettings();
             if (File.Exists(SettingsFilename))
                 settings = File.ReadAllText(SettingsFilename);
             if (!String.IsNullOrEmpty(settings))
                 try
                 {
-                    mqttBridgeSettings = JsonConvert.DeserializeObject<MqttBridgeSettings>(settings);
+                    mqttBridgeSettings = JsonConvert.DeserializeObject<Ctrl2MqttBridgeSettings>(settings);
                     Console.WriteLine("Settings read.");
                 }
                 catch { }
             return mqttBridgeSettings;
 
         }
-        public static void SaveSettings(string SettingsFilename, MqttBridgeSettings mqttBridgeSettings)
+        public static void SaveSettings(string SettingsFilename, Ctrl2MqttBridgeSettings mqttBridgeSettings)
         {
             Console.WriteLine("Getting settings...");
             string settings = "";

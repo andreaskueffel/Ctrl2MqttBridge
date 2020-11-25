@@ -16,10 +16,10 @@ namespace SetupCreator
             //Usage:
             //createsetup path_to_files
 
-            //Look for MqttBridge Process and stop it
+            //Look for Ctrl2MqttBridge Process and stop it
 
             Console.WriteLine("Start to create sfx file");
-            ZipFile myZip = new ZipFile("MqttBridgeSetup");
+            ZipFile myZip = new ZipFile("Ctrl2MqttBridgeSetup");
             if (args == null || args.Length < 1 || String.IsNullOrEmpty(args[0]))
             {
                 Console.WriteLine("Es wurde kein Pfad angegeben");
@@ -36,7 +36,7 @@ namespace SetupCreator
                 return;
             }
 
-            FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(directory + "\\MqttBridge.exe");
+            FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(directory + "\\Ctrl2MqttBridge.exe");
 
             myZip.AddDirectory(directory, "");
             SelfExtractorSaveOptions saveOptions = new SelfExtractorSaveOptions();
@@ -45,15 +45,15 @@ namespace SetupCreator
             saveOptions.SfxExeWindowTitle = "Präwema MQTT Bridge Setup";
             saveOptions.ProductName = "Präwema MQTT Bridge Setup Launcher";
             saveOptions.Copyright = "Copyright(C) 2020 Präwema Antriebstechnik GmbH";
-            saveOptions.DefaultExtractDirectory = "%TEMP%\\MqttBridge"+DateTime.Now.ToString("yyyymmddHHMMss");
+            saveOptions.DefaultExtractDirectory = "%TEMP%\\Ctrl2MqttBridge"+DateTime.Now.ToString("yyyymmddHHMMss");
             saveOptions.Description = "Präwema MQTT Bridge Setup Launcher";
             saveOptions.ProductVersion = fvi.FileVersion;
             saveOptions.FileVersion = new Version(saveOptions.ProductVersion);
             saveOptions.Quiet = true;
             saveOptions.RemoveUnpackedFilesAfterExecute = true;
-            saveOptions.PostExtractCommandLine = "MqttBridge.exe -i";
+            saveOptions.PostExtractCommandLine = "Ctrl2MqttBridge.exe -i";
             
-            myZip.SaveSelfExtractor(String.Format("MqttBridgeSetup-{0}.exe",fvi.FileVersion.ToString()), saveOptions);
+            myZip.SaveSelfExtractor(String.Format("Ctrl2MqttBridgeSetup-{0}.exe",fvi.FileVersion.ToString()), saveOptions);
         }
     }
 }
