@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ctrl2MqttBridge", "src\Ctrl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SetupCreator", "src\SetupCreator\SetupCreator.csproj", "{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CtrlConnection", "src\CtrlConnection\CtrlConnection.csproj", "{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ctrl2MqttClient", "src\Ctrl2MqttClient\Ctrl2MqttClient.csproj", "{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Siemens.Sinumerik.Operate.Services.Stub", "src\Siemens.Sinumerik.Operate.Services.Stub\Siemens.Sinumerik.Operate.Services.Stub.csproj", "{4A6C6A9E-0906-4C11-9510-7DBF14673CBF}"
 EndProject
