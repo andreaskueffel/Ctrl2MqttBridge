@@ -3,72 +3,22 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MqttBridge", "src\MqttBridge\MqttBridge.csproj", "{E45B80B4-193B-4816-BD5A-37C18025BD62}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MqttBridge", "src\MqttBridge\MqttBridge.csproj", "{E45B80B4-193B-4816-BD5A-37C18025BD62}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SetupCreator", "src\SetupCreator\SetupCreator.csproj", "{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SetupCreator", "src\SetupCreator\SetupCreator.csproj", "{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtrlConnection", "src\CtrlConnection\CtrlConnection.csproj", "{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CtrlConnection", "src\CtrlConnection\CtrlConnection.csproj", "{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Siemens.Sinumerik.Operate.Services.Stub", "src\Siemens.Sinumerik.Operate.Services.Stub\Siemens.Sinumerik.Operate.Services.Stub.csproj", "{4A6C6A9E-0906-4C11-9510-7DBF14673CBF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		CreateSetup|Any CPU = CreateSetup|Any CPU
 		CreateSetup|x86 = CreateSetup|x86
-		Debug|Any CPU = Debug|Any CPU
 		Debug|x86 = Debug|x86
-		DebugLocal|Any CPU = DebugLocal|Any CPU
-		DebugLocal|x86 = DebugLocal|x86
 		Release|Any CPU = Release|Any CPU
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E45B80B4-193B-4816-BD5A-37C18025BD62}.CreateSetup|Any CPU.ActiveCfg = CreateSetup|Any CPU
-		{E45B80B4-193B-4816-BD5A-37C18025BD62}.CreateSetup|Any CPU.Build.0 = CreateSetup|Any CPU
-		{E45B80B4-193B-4816-BD5A-37C18025BD62}.CreateSetup|x86.ActiveCfg = CreateSetup|x86
-		{E45B80B4-193B-4816-BD5A-37C18025BD62}.CreateSetup|x86.Build.0 = CreateSetup|x86
-		{E45B80B4-193B-4816-BD5A-37C18025BD62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E45B80B4-193B-4816-BD5A-37C18025BD62}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E45B80B4-193B-4816-BD5A-37C18025BD62}.Debug|x86.ActiveCfg = Debug|x86
-		{E45B80B4-193B-4816-BD5A-37C18025BD62}.Debug|x86.Build.0 = Debug|x86
-		{E45B80B4-193B-4816-BD5A-37C18025BD62}.DebugLocal|Any CPU.ActiveCfg = DebugLocal|Any CPU
-		{E45B80B4-193B-4816-BD5A-37C18025BD62}.DebugLocal|Any CPU.Build.0 = DebugLocal|Any CPU
-		{E45B80B4-193B-4816-BD5A-37C18025BD62}.DebugLocal|x86.ActiveCfg = DebugLocal|x86
-		{E45B80B4-193B-4816-BD5A-37C18025BD62}.DebugLocal|x86.Build.0 = DebugLocal|x86
-		{E45B80B4-193B-4816-BD5A-37C18025BD62}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E45B80B4-193B-4816-BD5A-37C18025BD62}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E45B80B4-193B-4816-BD5A-37C18025BD62}.Release|x86.ActiveCfg = Release|x86
-		{E45B80B4-193B-4816-BD5A-37C18025BD62}.Release|x86.Build.0 = Release|x86
-		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.CreateSetup|Any CPU.ActiveCfg = CreateSetup|Any CPU
-		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.CreateSetup|Any CPU.Build.0 = CreateSetup|Any CPU
-		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.CreateSetup|x86.ActiveCfg = CreateSetup|Any CPU
-		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.CreateSetup|x86.Build.0 = CreateSetup|Any CPU
-		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.Debug|x86.Build.0 = Debug|Any CPU
-		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.DebugLocal|Any CPU.ActiveCfg = Debug|Any CPU
-		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.DebugLocal|Any CPU.Build.0 = Debug|Any CPU
-		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.DebugLocal|x86.ActiveCfg = Debug|Any CPU
-		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.DebugLocal|x86.Build.0 = Debug|Any CPU
-		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.Release|x86.ActiveCfg = Release|Any CPU
-		{90E22CB7-0B5F-4D43-AD2D-CADB483198CD}.Release|x86.Build.0 = Release|Any CPU
-		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.CreateSetup|Any CPU.ActiveCfg = Release|Any CPU
-		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.CreateSetup|Any CPU.Build.0 = Release|Any CPU
-		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.CreateSetup|x86.ActiveCfg = Release|Any CPU
-		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.CreateSetup|x86.Build.0 = Release|Any CPU
-		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.Debug|x86.Build.0 = Debug|Any CPU
-		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.DebugLocal|Any CPU.ActiveCfg = Debug|Any CPU
-		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.DebugLocal|Any CPU.Build.0 = Debug|Any CPU
-		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.DebugLocal|x86.ActiveCfg = Debug|Any CPU
-		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.DebugLocal|x86.Build.0 = Debug|Any CPU
-		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.Release|Any CPU.Build.0 = Release|Any CPU
-		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.Release|x86.ActiveCfg = Release|Any CPU
-		{70CC440B-0BA6-46B5-88AE-E7F676FCCA67}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
