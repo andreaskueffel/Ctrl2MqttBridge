@@ -33,7 +33,7 @@ jobs:
 
     # Execute all unit tests in the solution
     - name: Execute unit tests
-      run: dotnet test
+      run: dotnet test --configuration ${{ matrix.configuration }}
 
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Build
@@ -48,7 +48,10 @@ jobs:
     - name: Create the nuget package
       run: dotnet pack --configuration Release
 
+    -name: print dir
+      run: dir
+
     - name: Push NuGet package to NuGet.org
       env: 
         API_KEY: ${{secrets.NUGET_API_KEY}}
-      run: dotnet nuget push src/Ctrl2MqttClient/bin/Release/*.nupkg --api-key "$env:API_KEY" -s https://api.nuget.org/v3/index.json
+      run: dotnet nuget push Ctrl2MqttBridge\src\Ctrl2MqttClient\bin\Release\*.nupkg --api-key "$env:API_KEY" -s https://api.nuget.org/v3/index.json

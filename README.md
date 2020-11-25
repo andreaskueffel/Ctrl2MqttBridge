@@ -1,3 +1,6 @@
+
+[![NuGet Badge](https://buildstats.info/nuget/Ctrl2MqttClient)](https://www.nuget.org/packages/Ctrl2MqttClient)
+
 # Ctrl2MqttBridge
 
 Provides connectivity to an industrial controller via MQTT
