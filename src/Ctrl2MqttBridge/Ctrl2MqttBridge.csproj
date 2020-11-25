@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net462</TargetFramework>
+    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
     <Version>2.0.1</Version>
     <Authors>Andreas Küffel</Authors>
     <Company>Präwema Antriebstechnik GmbH</Company>
@@ -10,7 +10,7 @@
     <PackageLicenseExpression></PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/andreaskueffel/Ctrl2MqttBridge</PackageProjectUrl>
     <RepositoryUrl>https://github.com/andreaskueffel/Ctrl2MqttBridge</RepositoryUrl>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>mqtt opc ua opcua iot controller s7 sinumerik siemens operate operatenet rexroth</PackageTags>
     <Description>Ctrl2MqttBridge is a Bridge between a control connection (to either OPC UA or Sinumerik Operate) and an easy to implement Mqtt protocol. For client implementation use Ctrl2MqttClient</Description>
   </PropertyGroup>
@@ -40,7 +40,7 @@
     </None>
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(TargetFramework)'=='net461'">
     <Exec Command="if not $(ConfigurationName)==Release goto :endcreatesetup&#xD;&#xA; $(ProjectDir)\SetupCreatorTools\SetupCreator.exe $(TargetDir)&#xD;&#xA;rem D:\Source\References\MT\mt.exe -manifest &quot;$(TargetDir)Ctrl2MqttBridgeSetup.exe.manifest&quot;  -outputresource:&quot;$(TargetDir)Ctrl2MqttBridgeSetup.exe&quot;;1&#xD;&#xA;:endcreatesetup" />
   </Target>
 

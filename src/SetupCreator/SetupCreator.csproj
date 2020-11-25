@@ -1,15 +1,19 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net462</TargetFramework>
+    <TargetFrameworks>net461</TargetFrameworks>
     <Platforms>AnyCPU;x86</Platforms>
+    <StartupObject>SetupCreator.Program</StartupObject>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)'=='net461'">
     <PackageReference Include="DotNetZip" Version="1.14.0" />
   </ItemGroup>
-
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+    <PackageReference Include="DotNetZip" Version="1.15.0" />
+  </ItemGroup>
+  
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="if not $(ConfigurationName)==Release goto :endcreatesetup&#xD;&#xA;copy $(OutDir)*.exe ..\..\src\Ctrl2MqttBridge\SetupCreatorTools\*.*&#xD;&#xA;copy $(OutDir)*.dll ..\..\src\Ctrl2MqttBridge\SetupCreatorTools\*.*&#xD;&#xA;:endcreatesetup" />
   </Target>

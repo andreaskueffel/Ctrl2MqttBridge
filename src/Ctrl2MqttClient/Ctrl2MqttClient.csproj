@@ -2,14 +2,18 @@
 
   <PropertyGroup>
     <OutputType>library</OutputType>
-    <TargetFramework>net462</TargetFramework>
+    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
     <Version>2.0.1</Version>
     <Authors>Andreas Küffel</Authors>
     <Company>Präwema Antriebstechnik GmbH</Company>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>2018-2020</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/andreaskueffel/Ctrl2MqttBridge</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/andreaskueffel/Ctrl2MqttBridge</RepositoryUrl>
+    <PackageLicenseFile></PackageLicenseFile>
+    <PackageTags>mqtt opc ua opcua iot controller s7 sinumerik siemens operate operatenet rexroth</PackageTags>
+    <Description>Ctrl2MqttClient is the client to the Ctrl2MqttBridge, bridging between a control connection (to either OPC UA or Sinumerik Operate) and an easy to implement Mqtt protocol. Needs a running Ctrl2MqttBridge instance.</Description>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="3.0.12" />
   </ItemGroup>

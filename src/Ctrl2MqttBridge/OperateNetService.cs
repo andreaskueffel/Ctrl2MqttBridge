@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.OleDb;
 using System.Threading.Tasks;
 using Ctrl2MqttBridge.Classes;
 using Ctrl2MqttBridge.Interfaces;
