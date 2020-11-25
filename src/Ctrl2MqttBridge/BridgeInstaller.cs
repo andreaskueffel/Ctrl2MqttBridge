@@ -202,10 +202,10 @@ namespace Ctrl2MqttBridge.Classes
                     return Errors.ShortcutCreation;
                 }
 
-                var mqttBridgeSettings = Functions.ReadSettings(TargetPath + Path.DirectorySeparatorChar + Program.SettingsFilename);
-                mqttBridgeSettings.OpcUaMode = true;
-                mqttBridgeSettings.ServerName = "192.168.142.250";
-                Functions.SaveSettings(TargetPath + Path.DirectorySeparatorChar + Program.SettingsFilename, mqttBridgeSettings);
+                var ctrl2MqttBridgeSettings = Functions.ReadSettings(TargetPath + Path.DirectorySeparatorChar + Program.SettingsFilename);
+                ctrl2MqttBridgeSettings.OpcUaMode = true;
+                ctrl2MqttBridgeSettings.ServerName = "192.168.142.250";
+                Functions.SaveSettings(TargetPath + Path.DirectorySeparatorChar + Program.SettingsFilename, ctrl2MqttBridgeSettings);
 
             }
             #endregion

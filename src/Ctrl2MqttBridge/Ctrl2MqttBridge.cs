@@ -197,8 +197,8 @@ namespace Ctrl2MqttBridge
 
             mqttClient = new MqttFactory().CreateManagedMqttClient();
             await mqttClient.StartAsync(optionsBuilder.Build());
-            await mqttClient.SubscribeAsync(new System.Collections.Generic.List<TopicFilter>() {
-                    (new TopicFilter() { Topic = "#" })
+            await mqttClient.SubscribeAsync(new System.Collections.Generic.List<MqttTopicFilter>() {
+                    (new MqttTopicFilter() { Topic = "#" })
 
             });
             mqttClient.ApplicationMessageReceivedHandler = new MessageReceivedHandler()
@@ -221,8 +221,8 @@ namespace Ctrl2MqttBridge
 
             mqttClientExternal = new MqttFactory().CreateManagedMqttClient();
             await mqttClientExternal.StartAsync(optionsBuilder.Build());
-            await mqttClientExternal.SubscribeAsync(new System.Collections.Generic.List<TopicFilter>() {
-                    (new TopicFilter() { Topic = mqttPrefix + "#" })
+            await mqttClientExternal.SubscribeAsync(new System.Collections.Generic.List<MqttTopicFilter>() {
+                    (new MqttTopicFilter() { Topic = mqttPrefix + "#" })
 
             });
             mqttClientExternal.ApplicationMessageReceivedHandler = new MessageReceivedHandler()

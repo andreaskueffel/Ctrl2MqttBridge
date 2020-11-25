@@ -197,7 +197,9 @@ namespace Ctrl2MqttBridge
             mqttClient = new MqttFactory().CreateManagedMqttClient();
             //Storage = new Storage(mqttClient);
             var tlsoptions = new MqttClientOptionsBuilderTlsParameters();
-            tlsoptions.CertificateValidationCallback = new Func<X509Certificate, X509Chain, SslPolicyErrors, IMqttClientOptions, bool>(ValidateServerCert);
+            //tlsoptions.CertificateValidationCallback = new Func<X509Certificate, X509Chain, SslPolicyErrors, IMqttClientOptions, bool>(ValidateServerCert);
+            tlsoptions.CertificateValidationHandler = new Func<MqttClientCertificateValidationCallbackContext, bool>(ValidateServerCert);
+
             tlsoptions.UseTls = true;
 
 
@@ -355,12 +357,10 @@ namespace Ctrl2MqttBridge
                         });
         }
 
-        private static bool ValidateServerCert(X509Certificate serverCert, X509Chain certChain, SslPolicyErrors sslPolicyErrors, IMqttClientOptions mqttClientOptions)
+        private static bool ValidateServerCert(MqttClientCertificateValidationCallbackContext mqttClientCertificateValidationCallbackContext)
         {
-            if (true)
                 return true;
-            else
-                return sslPolicyErrors == SslPolicyErrors.None;
+                //return mqttClientCertificateValidationCallbackContext.SslPolicyErrors == SslPolicyErrors.None;
         }
 
         private class ConnectingFailedHandler : IConnectingFailedHandler

@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="if not $(ConfigurationName)==CreateSetup goto :endcreatesetup&#xD;&#xA;copy $(OutDir)*.exe ..\..\src\Ctrl2MqttBridge\SetupCreatorTools\*.*&#xD;&#xA;copy $(OutDir)*.dll ..\..\src\Ctrl2MqttBridge\SetupCreatorTools\*.*&#xD;&#xA;:endcreatesetup" />
+    <Exec Command="if not $(ConfigurationName)==Release goto :endcreatesetup&#xD;&#xA;copy $(OutDir)*.exe ..\..\src\Ctrl2MqttBridge\SetupCreatorTools\*.*&#xD;&#xA;copy $(OutDir)*.dll ..\..\src\Ctrl2MqttBridge\SetupCreatorTools\*.*&#xD;&#xA;:endcreatesetup" />
   </Target>
 
 </Project>
