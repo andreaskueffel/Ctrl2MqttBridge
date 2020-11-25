@@ -12,9 +12,9 @@ namespace MqttBridge.Classes
         public string ServerName { get; set; } = "192.168.214.241";
         public int MqttPort { get; set; } = 51883;
         public int OpcUaPort { get; set; } = 4840;
-        public string OpcUaUsername { get; set; } = "HoningHMI";
-        public string OpcUaPassword { get; set; } = "HoningHMI";
-        public string ExternalBrokerUrl { get; set; } = "ssl://ekon.praewema.de:8883";
+        public string OpcUaUsername { get; set; } = "Username";
+        public string OpcUaPassword { get; set; } = "Password";
+        public string ExternalBrokerUrl { get; set; } = "ssl://some.broker.org:8883";
         public bool EnableExternalBroker { get; set; } = false;
         public bool EnableStatus { get; set; } = true;
 
