@@ -57,7 +57,31 @@ jobs:
         name: Ctrl2MqttBridgeInstaller
         path: src\Ctrl2MqttBridge\Ctrl2MqttBridgeSetup*.exe
 
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@latest
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          Automated Release by GitHub Action CI
+        draft: false
+        prerelease: true
+    - name: Upload Release Asset
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: src\Ctrl2MqttBridge\Ctrl2MqttBridgeSetup*.exe
+        asset_name: Ctrl2MqttBridgeSetup*.exe
+        asset_content_type: application/exe
+
+
     - name: Push NuGet package to NuGet.org
       env: 
         API_KEY: ${{secrets.NUGET_API_KEY}}
-      run: dotnet nuget push src\Ctrl2MqttClient\bin\Release\*.nupkg --api-key "$env:API_KEY" --source https://api.nuget.org/v3/index.json --no-symbols
+      run: dotnet nuget push src\Ctrl2MqttClient\bin\Release\*.nupkg --api-key "$env:API_KEY" --source https://api.nuget.org/v3/index.json --no-symbols true
