@@ -110,7 +110,10 @@ jobs:
 #      run: Remove-Item -path $env:Wap_Project_Directory\$env:Signing_Certificate
 
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-artifact
-#    - name: Upload build artifacts
+    - name: Push NuGet package to NuGet.org
+      env: 
+        API_KEY: ${{secrets.NUGET_API_KEY}}
+      run: dotnet nuget push src/Ctrl2MqttClient/bin/Release/*.nupkg --apikey %API_KEY%
 #      uses: actions/upload-artifact@v2
 #      with:
 #        name: MSIX Package
