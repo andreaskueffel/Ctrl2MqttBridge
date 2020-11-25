@@ -31,6 +31,11 @@ jobs:
       with:
         dotnet-version: 3.1.x
 
+    - name: Install 7Zip PowerShell Module
+      shell: powershell
+      run: Install-Module 7Zip4PowerShell -Force -Verbose
+
+
     # Execute all unit tests in the solution
 #    - name: Execute unit tests
 #      run: dotnet test --configuration ${{ matrix.configuration }}
@@ -57,13 +62,16 @@ jobs:
         name: Ctrl2MqttBridgeInstaller
         path: src\Ctrl2MqttBridge\Ctrl2MqttBridgeSetup*.exe
 
+    - name: Compress generated Binaries
+      run: Compress-7zip src\Ctrl2MqttBridge\Ctrl2MqttBridgeSetup*.* -ArchiveFileName "Ctrl2MqttBridgeSetup.zip" -Format Zip
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@latest
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
+        tag_name: ${{ github.ref }}_release
         release_name: Release ${{ github.ref }}
         body: |
           Automated Release by GitHub Action CI
@@ -76,9 +84,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: src\Ctrl2MqttBridge\Ctrl2MqttBridgeSetup*.exe
-        asset_name: Ctrl2MqttBridgeSetup*.exe
-        asset_content_type: application/exe
+        asset_path: ./Ctrl2MqttBridgeSetup.zip
+        asset_name: Ctrl2MqttBridgeSetup.zip
+        asset_content_type: application/zip
 
 
     - name: Push NuGet package to NuGet.org
