@@ -7,6 +7,7 @@ using Opc.Ua.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -117,8 +118,44 @@ namespace MqttBridge
             };
 
             // load the application configuration.
+            //var config = new ApplicationConfiguration()
+            //{
+            //    ApplicationName = application.ApplicationName,
+            //    ApplicationUri = "urn:localhost:Praewema:MqttBridge",
+            //    ProductUri = "https://github.org/andreaskueffel/mqttbridge",
+            //    ApplicationType = ApplicationType.Client,
+            //    ClientConfiguration = new ClientConfiguration()
+            //    {
+            //        WellKnownDiscoveryUrls=new StringCollection()
+            //        {
+            //            "opc.tcp://{0}:4840/UADiscovery"
+            //        }
+            //    },
+            //    SecurityConfiguration = new SecurityConfiguration()
+            //    {
+            //        ApplicationCertificate = new CertificateIdentifier
+            //        {
+            //            StoreType = "X509Store",
+            //            StorePath = "CurrentUser\\My",
+            //            SubjectName = "CN=MqttBridge UA Client, C=DE, S=Hessen, O=Praewema, DC=localhost"
+            //        },
+            //        TrustedIssuerCertificates = new CertificateTrustList() { StoreType = "Directory", StorePath = "%LocalApplicationData%/OPC Foundation/pki/issuer" },
+            //        TrustedPeerCertificates = new CertificateTrustList() { StoreType = "Directory", StorePath = "%LocalApplicationData%/OPC Foundation/pki/trusted" },
+            //        RejectedCertificateStore = new CertificateTrustList() { StoreType = "Directory", StorePath = "%LocalApplicationData%/OPC Foundation/pki/rejected" },
+            //        AutoAcceptUntrustedCertificates = true,
+            //    },
+            //    TransportConfigurations=new TransportConfigurationCollection(),
+            //    TransportQuotas = new TransportQuotas(),
+            //    TraceConfiguration = new TraceConfiguration()
+            //    {
+            //        OutputFilePath="MqttBridge.Opc.Ua.CoreClient.log",
+            //        DeleteOnLoad=true,
+            //        TraceMasks=519
+            //    },
+            //};
+            //Utils.Tracing.TraceEventHandler += Tracing_TraceEventHandler;
             ApplicationConfiguration config = await application.LoadApplicationConfiguration(false);
-
+            
             // check the application certificate.
             bool haveAppCertificate = await application.CheckApplicationInstanceCertificate(false, 0);
             if (!haveAppCertificate)
@@ -272,8 +309,11 @@ namespace MqttBridge
             exitCode = ExitCode.ErrorRunning;
         }
 
+        private void Tracing_TraceEventHandler(object sender, TraceEventArgs e)
+        {
+            System.Diagnostics.Trace.WriteLine(String.Format(e.Format,e.Arguments));
+        }
 
-        
         public async Task<uint> Subscribe(string rawNodeId, int interval)
         {
             string nodeId = ReformatNodeId(rawNodeId);

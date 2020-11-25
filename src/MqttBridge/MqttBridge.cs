@@ -325,14 +325,10 @@ namespace MqttBridge
         async Task initOperateNetService()
         {
             await Task.Run(() =>
-            {
-                try
-                {
+            {                
                     operateNetService = new OperateNetService();
                     OperateNetService.NewNotification += Client_NewNotification;
                     OperateNetService.NewAlarmNotification += Client_NewAlarmNotification;
-                }
-                catch { }
             });
         }
         async Task initOPCUAClient()

@@ -8,6 +8,11 @@ namespace Siemens.Sinumerik.Operate.Services
 {
     public class DataSvc
     {
+        public DataSvc()
+        {
+            throw new NotImplementedException();
+        }
+
         public void Read(Item item)
         {
             throw new NotImplementedException();

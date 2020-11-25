@@ -21,6 +21,12 @@
     <ProjectReference Condition="!Exists('External\Siemens.Sinumerik.Operate.Services.dll')" Include="..\Siemens.Sinumerik.Operate.Services.Stub\Siemens.Sinumerik.Operate.Services.Stub.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Opc.Ua.SampleClient.config.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="if not $(ConfigurationName)==CreateSetup goto :endcreatesetup&#xD;&#xA; $(ProjectDir)\SetupCreatorTools\SetupCreator.exe $(TargetDir)&#xD;&#xA;rem D:\Source\References\MT\mt.exe -manifest &quot;$(TargetDir)MqttBridgeSetup.exe.manifest&quot;  -outputresource:&quot;$(TargetDir)MqttBridgeSetup.exe&quot;;1&#xD;&#xA;:endcreatesetup" />
   </Target>
