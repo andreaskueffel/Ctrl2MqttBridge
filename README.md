@@ -1,5 +1,6 @@
 
 [![NuGet Badge](https://buildstats.info/nuget/Ctrl2MqttClient)](https://www.nuget.org/packages/Ctrl2MqttClient)
+https://github.com/andreaskueffel/Ctrl2MqttBridge/workflows/BuildAndDeploy/badge.svg
 
 # Ctrl2MqttBridge
 
@@ -16,7 +17,7 @@ and Rexroth MTX (CML85) controllers to HMI software.
 
 ## Included subprojects
 
-- CtrlConnection -> use this dll in any project to easily connect to any controller
+- Ctrl2MqttClient -> use this dll in any project to easily connect to any controller
 - SetupCreator/SetupTools -> used to build the MqttBridgeSetup.exe sfx installer
 - Siemens.Sinumerik.Operate.Services.Stub -> Stub for the commercial Siemens OperateNet Libraries
 

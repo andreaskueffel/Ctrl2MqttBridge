@@ -1,4 +1,4 @@
-name: Build .NET Projects and deploy NuGet Package
+name: BuildAndDeploy
 
 on:
   push:
@@ -29,11 +29,11 @@ jobs:
     - name: Install .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.101
+        dotnet-version: 3.1.x
 
     # Execute all unit tests in the solution
-    - name: Execute unit tests
-      run: dotnet test --configuration ${{ matrix.configuration }}
+#    - name: Execute unit tests
+#      run: dotnet test --configuration ${{ matrix.configuration }}
 
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Build
@@ -46,12 +46,18 @@ jobs:
 
     # Create the app package by building and packaging the Windows Application Packaging project
     - name: Create the nuget package
-      run: dotnet pack --configuration Release
+      run: dotnet pack --configuration ${{ matrix.configuration }}
 
-    - name: print dir
-      run: dir
+#    - name: print dir
+#      run: dir
+#      run: dir src
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Ctrl2MqttBridgeInstaller
+        path: src\Ctrl2MqttBridge\Ctrl2MqttBridgeSetup*.exe
 
     - name: Push NuGet package to NuGet.org
       env: 
         API_KEY: ${{secrets.NUGET_API_KEY}}
-      run: dotnet nuget push src\Ctrl2MqttClient\bin\Release\*.nupkg --api-key "$env:API_KEY" -s https://api.nuget.org/v3/index.json
+      run: dotnet nuget push src\Ctrl2MqttClient\bin\Release\*.nupkg --api-key "$env:API_KEY" --source https://api.nuget.org/v3/index.json --no-symbols

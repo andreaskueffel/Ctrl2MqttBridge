@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
+    <AssemblyName>Siemens.Sinumerik.Operate.Services</AssemblyName>
   </PropertyGroup>
 
 </Project>
