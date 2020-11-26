@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading;
@@ -120,6 +121,7 @@ namespace Ctrl2MqttBridge
 
                 return new BridgeStatus()
                 {
+                    Ctrl2MqttBridgeVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString(),
                     ClientCount = ((await mqttServer.GetClientStatusAsync()).Count) - 1,
                     OperationMode = Client != null ? (Program.Ctrl2MqttBridgeSettings.OpcUaMode ? "OPCUA" : "OperateNetService") : "NO_CTRL_CONNECTION",
                     ServerName = MachineName,

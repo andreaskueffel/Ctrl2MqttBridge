@@ -8,6 +8,7 @@ namespace Ctrl2MqttBridge.Classes
 {
     public class BridgeStatus
     {
+        public string Ctrl2MqttBridgeVersion { get; set; }
         public string OperationMode { get; set; }
         public string ServerName { get; set; }
         public string ServerTime { get; set; }

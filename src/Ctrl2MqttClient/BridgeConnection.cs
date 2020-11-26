@@ -29,9 +29,18 @@ namespace Ctrl2MqttBridge
         static ManualResetEvent ReadItemResetEvent = null;
         static ManualResetEvent WriteItemResetEvent = null;
         static bool connectionRoundTrip = false;
-        bool ConnectionRoundTrip { get => connectionRoundTrip; set { connectionRoundTrip = value;
-                OnConnectionHandler(connectionRoundTrip);
-            } }
+        bool ConnectionRoundTrip
+        {
+            get => connectionRoundTrip;
+            set
+            {
+                if (connectionRoundTrip != value)
+                {
+                    connectionRoundTrip = value;
+                    OnConnectionHandler(connectionRoundTrip);
+                }
+            }
+        }
         public static bool IsConnected
         {
 
@@ -57,7 +66,12 @@ namespace Ctrl2MqttBridge
             if (subscriptionHelpersLock == null)
                 subscriptionHelpersLock = new object();
         }
-
+        /// <summary>
+        /// Connects synchronous to the Bridge - this is not recommended!! Use ConnectAsync instead
+        /// </summary>
+        /// <param name="mqttIp"></param>
+        /// <param name="mqttPort"></param>
+        /// <param name="clientID"></param>
         public void ConnectSync(string mqttIp, int mqttPort, string clientID)
         {
             ConnectAsync(mqttIp, mqttPort, clientID).Wait();
@@ -306,6 +320,10 @@ namespace Ctrl2MqttBridge
         private async Task<bool> CheckMqttBridgeRoundtrip()
         {
             //Check backwards compatibility with MqttBridge
+            while (!IsConnected)
+            {
+                await Task.Delay(200);
+            }
             await SendToMQTT(mqttPrefix + "write" + "/nonsensetocheckbridgeconnectivity", "roundtriptest");
             int timeout = 10;
             while (!ConnectionRoundTrip && timeout>0)
