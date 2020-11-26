@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>library</OutputType>
     <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
-    <Version>2.0.1</Version>
+    <Version>2.0.2</Version>
     <Authors>Andreas Küffel</Authors>
     <Company>Präwema Antriebstechnik GmbH</Company>
     <Copyright>2018-2020</Copyright>
@@ -16,6 +16,11 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="3.0.12" />
+  </ItemGroup>
+  <ItemGroup Label="FilesToInclude">
+    <Content Include="..\Ctrl2MqttBridge\Ctrl2MqttBridgeSetup*.exe">
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+    </Content>
   </ItemGroup>
 
 </Project>

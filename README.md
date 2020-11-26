@@ -27,7 +27,13 @@ and Rexroth MTX (CML85) controllers to HMI software.
 - or via OperateNET library (provided by Siemens)
 - To use OperateNET library the "Siemens.Sinumerik.Operate.Services.dll" files are required in External directory during build
 
-## Usage of Ctrl2MqttBridge / CtrlConnection
+## Cheatsheet
+
+- Add PackageReference to any of your .NET Projects to Ctrl2MqttClient
+- Implement a new Class inheriting from CtrlConnection (see example below)
+- In the output dir of your project you should find the Ctrl2MqttBridgeSetup > this has to be installed / running to communicate
+
+## Usage of Ctrl2MqttBridge / Ctrl2MqttClient
 
 ### Ctrl2MqttBridge
 
@@ -44,9 +50,9 @@ and Rexroth MTX (CML85) controllers to HMI software.
  - EnableExternalBroker -> false unless there is a need to use it
  - EnableStatus -> true to see BridgeStatus messages
 
-### CtrlConnection
+### Ctrl2MqttClient
 
-- Just put a reference on the CtrlConnection library (via NuGet)
+- Just put a reference on the Ctrl2MqttClient library package (via NuGet)
 - setup a new class and inherit from BridgeConnection
 ``` cs
 public class CtrlConnection : BridgeConnection
@@ -83,3 +89,6 @@ public class CtrlConnection : BridgeConnection
 
 ```
  - ToDo: improve documentation
+ - Automate Versioning
+
+ - Simultanous reads/write with queuing
