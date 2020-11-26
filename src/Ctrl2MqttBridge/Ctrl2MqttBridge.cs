@@ -255,7 +255,7 @@ namespace Ctrl2MqttBridge
                         {
                             if (subTopic.Contains("nonsensetocheckbridgeconnectivity"))
                             {
-                                await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = (mqttPrefix + "readresult/" + subTopic), Payload = Encoding.UTF8.GetBytes("OK") });
+                                await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = (mqttPrefix + "writeresult/" + subTopic), Payload = Encoding.UTF8.GetBytes("OK") });
                             }
                             else
                             {
