@@ -253,15 +253,22 @@ namespace Ctrl2MqttBridge
                         string subTopic = eventArgs.ApplicationMessage.Topic.Substring((mqttPrefix + "write/").Length);
                         try
                         {
-                            uint resultCode = 1;
-                            string payload = eventArgs.ApplicationMessage.ConvertPayloadToString();
-                            if (String.IsNullOrEmpty(payload))
-                                resultCode = 2;
+                            if (subTopic.Contains("nonsensetocheckbridgeconnectivity"))
+                            {
+                                await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = (mqttPrefix + "readresult/" + subTopic), Payload = Encoding.UTF8.GetBytes("OK") });
+                            }
                             else
-                                resultCode = await Client.Write(subTopic, payload);
-                            await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = (mqttPrefix + "writeresult/" + subTopic), Payload = Encoding.UTF8.GetBytes(resultCode.ToString()) });
-                            if (resultCode == 0)
-                                await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = (mqttPrefix + "writevalue/" + subTopic), Payload = Encoding.UTF8.GetBytes(payload) });
+                            {
+                                uint resultCode = 1;
+                                string payload = eventArgs.ApplicationMessage.ConvertPayloadToString();
+                                if (String.IsNullOrEmpty(payload))
+                                    resultCode = 2;
+                                else
+                                    resultCode = await Client.Write(subTopic, payload);
+                                await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = (mqttPrefix + "writeresult/" + subTopic), Payload = Encoding.UTF8.GetBytes(resultCode.ToString()) });
+                                if (resultCode == 0)
+                                    await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = (mqttPrefix + "writevalue/" + subTopic), Payload = Encoding.UTF8.GetBytes(payload) });
+                            }
                         }
                         catch (Exception exc)
                         {
@@ -274,10 +281,6 @@ namespace Ctrl2MqttBridge
                         string subTopic = eventArgs.ApplicationMessage.Topic.Substring((mqttPrefix + "read/").Length);
                         try
                         {
-                            if (subTopic.Contains("nonsensetocheckbridgeconnectivity"))
-                            {
-                                await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = (mqttPrefix + "readresult/" + subTopic), Payload = Encoding.UTF8.GetBytes("OK") });
-                            }
                             string payload = eventArgs.ApplicationMessage.ConvertPayloadToString();
                             string result = await Client.Read(subTopic);
                             await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = (mqttPrefix + "readresult/" + subTopic), Payload = Encoding.UTF8.GetBytes(result) });

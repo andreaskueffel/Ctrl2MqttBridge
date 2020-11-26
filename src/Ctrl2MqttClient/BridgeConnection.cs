@@ -3,6 +3,7 @@ using MQTTnet.Client.Options;
 using MQTTnet.Extensions.ManagedClient;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Security;
 using System.Runtime.CompilerServices;
@@ -27,7 +28,10 @@ namespace Ctrl2MqttBridge
         public static event EventHandler<bool> ConnectionHandler;
         static ManualResetEvent ReadItemResetEvent = null;
         static ManualResetEvent WriteItemResetEvent = null;
-        static bool readCallback = false;
+        static bool connectionRoundTrip = false;
+        bool ConnectionRoundTrip { get => connectionRoundTrip; set { connectionRoundTrip = value;
+                OnConnectionHandler(connectionRoundTrip);
+            } }
         public static bool IsConnected
         {
 
@@ -39,6 +43,8 @@ namespace Ctrl2MqttBridge
             }
 
         }
+
+        
 
         public BridgeConnection()
         {
@@ -60,14 +66,15 @@ namespace Ctrl2MqttBridge
         {
             return Task.Run(async () => { 
                 await InitializeMqttClient(mqttIp, mqttPort, clientID);
-                bool topicOk = await CheckMqttBridgeTopic();
-                if (!topicOk)
+                _ = await CheckMqttBridgeRoundtrip();
+                if (!ConnectionRoundTrip)
                 {
                     Disconnect();
                     mqttPrefix = "mqttbridge/";
-                    mqttClientUsername=mqttClientPassword="MqttBridge";
+                    mqttClientUsername=mqttClientPassword="HoningHMI";
 
                     await InitializeMqttClient(mqttIp, mqttPort, clientID);
+                    _ = await CheckMqttBridgeRoundtrip(); //connectionRoundTrip = true;
                 }
             });
         }
@@ -281,30 +288,33 @@ namespace Ctrl2MqttBridge
             mqttClient.UseConnectedHandler(async e =>
             {
                 await SendConnectionState("CONNECTED", clientID);
-                await Task.Run(async () => await Task.Run(() => OnConnectionHandler(true)));
+                //await Task.Run(async () => await Task.Run(() => OnConnectionHandler(true)));
+                //Moved to ConnectionRoundTrip
                 System.Diagnostics.Trace.WriteLine("MQTT Connected");
             });
             mqttClient.UseDisconnectedHandler(async e =>
             {
                 await SendConnectionState("DISCONNECTED", clientID);
-                await Task.Run(async () => await Task.Run(() => OnConnectionHandler(false)));
+                //await Task.Run(async () => await Task.Run(() => OnConnectionHandler(false)));
+                ConnectionRoundTrip = false;
                 subscriptionHelpers.Clear();
                 System.Diagnostics.Trace.WriteLine("MQTT Disconnected");
             });
             await mqttClient.StartAsync(options);
             
         }
-        private async Task<bool> CheckMqttBridgeTopic()
+        private async Task<bool> CheckMqttBridgeRoundtrip()
         {
             //Check backwards compatibility with MqttBridge
-            await SendToMQTT(mqttPrefix + "read" + "/nonsensetocheckbridgeconnectivity", "");
-            int timeout = 100;
-            while (!readCallback && timeout>0)
+            await SendToMQTT(mqttPrefix + "write" + "/nonsensetocheckbridgeconnectivity", "roundtriptest");
+            int timeout = 10;
+            while (!ConnectionRoundTrip && timeout>0)
             {
                 await Task.Delay(100);
                 timeout--;
+                Trace.WriteLine("Checking roundtrip to Bridge..." + timeout);
             }
-            return readCallback;
+            return ConnectionRoundTrip;
         }
         private void OnConnectionHandler(bool v)
         {
@@ -316,9 +326,8 @@ namespace Ctrl2MqttBridge
         static MonitoredItem MonitoredItemWrite = null;
         static object readLock = new object();
         static object writeLock = new object();
-        private static void OnReadResult(string nodeId, string payload)
+        private void OnReadResult(string nodeId, string payload)
         {
-            readCallback = true;
             if (MonitoredItemRead != null && MonitoredItemRead.NodeId.ToLower() == nodeId.ToLower())
             {
                 MonitoredItemRead = new MonitoredItem()
@@ -331,8 +340,9 @@ namespace Ctrl2MqttBridge
                 ReadItemResetEvent.Set();
             }
         }
-        private static void OnWriteResult(string nodeId, string payload)
+        private void OnWriteResult(string nodeId, string payload)
         {
+            ConnectionRoundTrip = true;
             if (MonitoredItemWrite != null && MonitoredItemWrite.NodeId.ToLower() == nodeId.ToLower())
             {
                 MonitoredItemWrite = new MonitoredItem()
