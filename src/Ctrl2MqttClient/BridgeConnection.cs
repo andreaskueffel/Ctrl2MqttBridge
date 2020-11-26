@@ -17,14 +17,17 @@ namespace Ctrl2MqttBridge
     {
         //Stub class to integrate common Code for client side
 
-        const string mqttPrefix = "ctrl2mqttbridge/";
+        static string mqttPrefix = "ctrl2mqttbridge/";
+        static string mqttClientUsername = "Ctrl2MqttBridge";
+        static string mqttClientPassword = "Ctrl2MqttBridge";
+
         public static IManagedMqttClient mqttClient = null;
         static List<SubscriptionHelper> subscriptionHelpers = null;
         static object subscriptionHelpersLock = null;
         public static event EventHandler<bool> ConnectionHandler;
         static ManualResetEvent ReadItemResetEvent = null;
         static ManualResetEvent WriteItemResetEvent = null;
-
+        static bool readCallback = false;
         public static bool IsConnected
         {
 
@@ -55,7 +58,18 @@ namespace Ctrl2MqttBridge
         }
         public Task ConnectAsync(string mqttIp, int mqttPort, string clientID)
         {
-            return Task.Run(async () => { await InitializeMqttClient(mqttIp, mqttPort, clientID); });
+            return Task.Run(async () => { 
+                await InitializeMqttClient(mqttIp, mqttPort, clientID);
+                bool topicOk = await CheckMqttBridgeTopic();
+                if (!topicOk)
+                {
+                    Disconnect();
+                    mqttPrefix = "mqttbridge/";
+                    mqttClientUsername=mqttClientPassword="MqttBridge";
+
+                    await InitializeMqttClient(mqttIp, mqttPort, clientID);
+                }
+            });
         }
         
         public void Disconnect()
@@ -211,7 +225,7 @@ namespace Ctrl2MqttBridge
                     .WithClientId(clientID + new Random().Next(10000, 10000000).ToString())
                     .WithTcpServer(server, port)
                     //.WithTls(tlsoptions)
-                    .WithCredentials("Ctrl2MqttBridge", "Ctrl2MqttBridge")
+                    .WithCredentials(mqttClientUsername, mqttClientPassword)
                     .WithWillMessage(new MqttApplicationMessage()
                     {
                         Topic = mqttPrefix + clientID,
@@ -278,10 +292,20 @@ namespace Ctrl2MqttBridge
                 System.Diagnostics.Trace.WriteLine("MQTT Disconnected");
             });
             await mqttClient.StartAsync(options);
-
-
+            
         }
-
+        private async Task<bool> CheckMqttBridgeTopic()
+        {
+            //Check backwards compatibility with MqttBridge
+            await SendToMQTT(mqttPrefix + "read" + "/nonsensetocheckbridgeconnectivity", "");
+            int timeout = 100;
+            while (!readCallback && timeout>0)
+            {
+                await Task.Delay(100);
+                timeout--;
+            }
+            return readCallback;
+        }
         private void OnConnectionHandler(bool v)
         {
             if (ConnectionHandler != null)
@@ -294,6 +318,7 @@ namespace Ctrl2MqttBridge
         static object writeLock = new object();
         private static void OnReadResult(string nodeId, string payload)
         {
+            readCallback = true;
             if (MonitoredItemRead != null && MonitoredItemRead.NodeId.ToLower() == nodeId.ToLower())
             {
                 MonitoredItemRead = new MonitoredItem()
