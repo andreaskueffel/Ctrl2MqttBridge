@@ -14,8 +14,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ctrl2MqttClient", "src\Ctrl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Siemens.Sinumerik.Operate.Services.Stub", "src\Siemens.Sinumerik.Operate.Services.Stub\Siemens.Sinumerik.Operate.Services.Stub.csproj", "{4A6C6A9E-0906-4C11-9510-7DBF14673CBF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CtrlConnectionExample", "..\..\Beispiele\CtrlConnectionExample\CtrlConnectionExample.csproj", "{36C35435-A6CE-47F7-901B-529C291A61A1}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,14 +54,6 @@ Global
 		{4A6C6A9E-0906-4C11-9510-7DBF14673CBF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4A6C6A9E-0906-4C11-9510-7DBF14673CBF}.Release|x86.ActiveCfg = Release|Any CPU
 		{4A6C6A9E-0906-4C11-9510-7DBF14673CBF}.Release|x86.Build.0 = Release|Any CPU
-		{36C35435-A6CE-47F7-901B-529C291A61A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{36C35435-A6CE-47F7-901B-529C291A61A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{36C35435-A6CE-47F7-901B-529C291A61A1}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{36C35435-A6CE-47F7-901B-529C291A61A1}.Debug|x86.Build.0 = Debug|Any CPU
-		{36C35435-A6CE-47F7-901B-529C291A61A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{36C35435-A6CE-47F7-901B-529C291A61A1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{36C35435-A6CE-47F7-901B-529C291A61A1}.Release|x86.ActiveCfg = Release|Any CPU
-		{36C35435-A6CE-47F7-901B-529C291A61A1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
