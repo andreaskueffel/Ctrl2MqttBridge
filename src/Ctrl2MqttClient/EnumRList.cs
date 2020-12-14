@@ -26,6 +26,8 @@ namespace Ctrl2MqttBridge
         NCServer = 905,         //Analog zur Rexroth Kommunikation NC --> AdaptivHonServer
         ServerNC = 906,         //Analog zur Rexroth Kommunikation AdaptivHonServer --> NC
         HRICommMonitor = 907,     //HRI Kommunikation überwachen
+        HRIFeedLimiter = 908,
+        HRIRequestStopCycle = 909,
         ToolLifeMax = 910,      //Berechnete Werkzeugstandzeit Honrad neu
         ToolLifeAct = 911,      //Aktuelle Werkzeugstandzeit Honrad (wird beim Abrichten neu geschrieben, Progr. 134)
         DresInterval = 912,     //Abrichtzyklus
@@ -54,6 +56,9 @@ namespace Ctrl2MqttBridge
         RckBallsizeRpActual = 941,   //Kugelmass Rohteil Ist
         RckBallsizeFpTarget = 942,  //Kugelmass Fertigteil Soll
         RckBallsizeFpActual = 943,  //Kugelmass Fertigteil Ist
+
+        TotalPartCountOK=951,
+        TotalPartCoundNOK=952,
 
         StateWPMeas = 1915,       //Status Einmitten
 

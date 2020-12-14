@@ -18,9 +18,9 @@ namespace Ctrl2MqttBridge
     {
         //Stub class to integrate common Code for client side
 
-        static string mqttPrefix = "ctrl2mqttbridge/";
-        static string mqttClientUsername = "Ctrl2MqttBridge";
-        static string mqttClientPassword = "Ctrl2MqttBridge";
+        public static string MqttPrefix { get; set; } = "ctrl2mqttbridge/";
+        public static string MqttClientUsername { get; set; } = "Ctrl2MqttBridge";
+        public static string MqttClientPassword { get; set; } = "Ctrl2MqttBridge";
 
         public static IManagedMqttClient mqttClient = null;
         static List<SubscriptionHelper> subscriptionHelpers = null;
@@ -84,8 +84,8 @@ namespace Ctrl2MqttBridge
                 if (!ConnectionRoundTrip)
                 {
                     Disconnect();
-                    mqttPrefix = "mqttbridge/";
-                    mqttClientUsername=mqttClientPassword="HoningHMI";
+                    MqttPrefix = "mqttbridge/";
+                    MqttClientUsername=MqttClientPassword="HoningHMI";
 
                     await InitializeMqttClient(mqttIp, mqttPort, clientID);
                     _ = await CheckMqttBridgeRoundtrip(); //connectionRoundTrip = true;
@@ -116,7 +116,7 @@ namespace Ctrl2MqttBridge
             }
             if (!subsc.MonitoredItems.ContainsKey(nodeId))
                 subsc.MonitoredItems.Add(nodeId, new MonitoredItem() { NodeId = nodeId, DisplayName = nodeId.ToLower() });
-            _ = SendToMQTT(mqttPrefix + "subscribe" + nodeId, "100", 1);
+            _ = SendToMQTT(MqttPrefix + "subscribe" + nodeId, "100", 1);
         }
 
         public string ReadNode(string NodeName)
@@ -134,7 +134,7 @@ namespace Ctrl2MqttBridge
                     Value = null
                 };
                 ReadItemResetEvent.Reset();
-                _ = SendToMQTT(mqttPrefix + "read" + NodeName, "");
+                _ = SendToMQTT(MqttPrefix + "read" + NodeName, "");
                 ReadItemResetEvent.WaitOne(1000);
                 string ret_val = null;
                 if (MonitoredItemRead.NodeId == NodeName)
@@ -186,7 +186,7 @@ namespace Ctrl2MqttBridge
         {
             if (!nodeId.StartsWith("/"))
                 nodeId = "/" + nodeId;
-            _ = SendToMQTT(mqttPrefix + "write" + nodeId, value);
+            _ = SendToMQTT(MqttPrefix + "write" + nodeId, value);
         }
         public bool WriteNodeSync(string nodeId, string value)
         {
@@ -202,7 +202,7 @@ namespace Ctrl2MqttBridge
                     Value = null
                 };
                 WriteItemResetEvent.Reset();
-                _ = SendToMQTT(mqttPrefix + "write" + nodeId, value);
+                _ = SendToMQTT(MqttPrefix + "write" + nodeId, value);
                 WriteItemResetEvent.WaitOne(1000);
 
                 bool success = false;
@@ -246,10 +246,10 @@ namespace Ctrl2MqttBridge
                     .WithClientId(clientID + new Random().Next(10000, 10000000).ToString())
                     .WithTcpServer(server, port)
                     //.WithTls(tlsoptions)
-                    .WithCredentials(mqttClientUsername, mqttClientPassword)
+                    .WithCredentials(MqttClientUsername, MqttClientPassword)
                     .WithWillMessage(new MqttApplicationMessage()
                     {
-                        Topic = mqttPrefix + clientID,
+                        Topic = MqttPrefix + clientID,
                         Retain = true,
                         Payload = Encoding.UTF8.GetBytes("DROPPED"),
                         QualityOfServiceLevel = MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce
@@ -259,16 +259,16 @@ namespace Ctrl2MqttBridge
 
             mqttClient.ConnectingFailedHandler = new ConnectingFailedHandler();
 
-            await mqttClient.SubscribeAsync(mqttPrefix + "subscriptionnotification/#");
-            await mqttClient.SubscribeAsync(mqttPrefix + "readresult/#");
-            await mqttClient.SubscribeAsync(mqttPrefix + "writeresult/#");
+            await mqttClient.SubscribeAsync(MqttPrefix + "subscriptionnotification/#");
+            await mqttClient.SubscribeAsync(MqttPrefix + "readresult/#");
+            await mqttClient.SubscribeAsync(MqttPrefix + "writeresult/#");
 
             mqttClient.UseApplicationMessageReceivedHandler(async e =>
             {
                 await Task.Run(() => {
-                    if (e.ApplicationMessage.Topic.StartsWith(mqttPrefix + "subscriptionnotification/"))
+                    if (e.ApplicationMessage.Topic.StartsWith(MqttPrefix + "subscriptionnotification/"))
                     {
-                        string nodeId = e.ApplicationMessage.Topic.Replace(mqttPrefix + "subscriptionnotification/", "/");
+                        string nodeId = e.ApplicationMessage.Topic.Replace(MqttPrefix + "subscriptionnotification/", "/");
                         string payload = null;
                         if (e.ApplicationMessage.Payload != null)
                             payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
@@ -277,9 +277,9 @@ namespace Ctrl2MqttBridge
                             Task.Run(() => subsc.UpdateValue(nodeId, payload));
                         }
                     }
-                    if (e.ApplicationMessage.Topic.StartsWith(mqttPrefix + "readresult/"))
+                    if (e.ApplicationMessage.Topic.StartsWith(MqttPrefix + "readresult/"))
                     {
-                        string nodeId = e.ApplicationMessage.Topic.Replace(mqttPrefix + "readresult/", "/");
+                        string nodeId = e.ApplicationMessage.Topic.Replace(MqttPrefix + "readresult/", "/");
                         string payload = null;
                         //System.Diagnostics.Trace.WriteLine(e.ApplicationMessage.Topic + "=" + e.ApplicationMessage.Payload.ToString());
                         if (e.ApplicationMessage.Payload != null)
@@ -287,9 +287,9 @@ namespace Ctrl2MqttBridge
                         Task.Run(() => OnReadResult(nodeId, payload));
 
                     }
-                    if (e.ApplicationMessage.Topic.StartsWith(mqttPrefix + "writeresult/"))
+                    if (e.ApplicationMessage.Topic.StartsWith(MqttPrefix + "writeresult/"))
                     {
-                        string nodeId = e.ApplicationMessage.Topic.Replace(mqttPrefix + "writeresult/", "/");
+                        string nodeId = e.ApplicationMessage.Topic.Replace(MqttPrefix + "writeresult/", "/");
                         string payload = null;
                         //System.Diagnostics.Trace.WriteLine(e.ApplicationMessage.Topic + "=" + e.ApplicationMessage.Payload.ToString());
                         if (e.ApplicationMessage.Payload != null)
@@ -324,7 +324,7 @@ namespace Ctrl2MqttBridge
             {
                 await Task.Delay(200);
             }
-            await SendToMQTT(mqttPrefix + "write" + "/nonsensetocheckbridgeconnectivity", "roundtriptest");
+            await SendToMQTT(MqttPrefix + "write" + "/nonsensetocheckbridgeconnectivity", "roundtriptest");
             int timeout = 10;
             while (!ConnectionRoundTrip && timeout>0)
             {
@@ -380,7 +380,7 @@ namespace Ctrl2MqttBridge
             {
                 ApplicationMessage = new MqttApplicationMessage()
                 {
-                    Topic = mqttPrefix + clientID,
+                    Topic = MqttPrefix + clientID,
                     Retain = true,
                     Payload = Encoding.UTF8.GetBytes(payload),
                     QualityOfServiceLevel = MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce

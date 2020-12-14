@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Opc.Ua;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,8 +18,8 @@ namespace Ctrl2MqttBridge.Classes
         public string ExternalBrokerUrl { get; set; } = "ssl://some.broker.org:8883";
         public bool EnableExternalBroker { get; set; } = false;
         public bool EnableStatus { get; set; } = true;
-
-
+        public string BridgeTopic { get; set; } = "ctrl2mqttbridge/";
+        public string BridgeCredentials { get; set; } = "Ctrl2MqttBridge:Ctrl2MqttBridge";
 
         public Ctrl2MqttBridgeSettings() { }
 

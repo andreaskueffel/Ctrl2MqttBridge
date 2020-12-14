@@ -20,7 +20,7 @@ namespace Ctrl2MqttBridge
 {
     public class Ctrl2MqttBridge
     {
-        const string mqttPrefix = "ctrl2mqttbridge/";
+        static string mqttPrefix;
         IManagedMqttClient mqttClient;
         IMqttServer mqttServer;
         IManagedMqttClient mqttClientExternal;
@@ -41,10 +41,34 @@ namespace Ctrl2MqttBridge
             MachineName = Environment.MachineName;
             ClientRights = new Dictionary<string, bool>();
             ClientId = "praekon_ctrl2mqttBridge_" + StartTime.ToString("yyyyMMddHHmmss");
+            string bridgeTopic = !String.IsNullOrWhiteSpace(Program.Ctrl2MqttBridgeSettings.BridgeTopic)? Program.Ctrl2MqttBridgeSettings.BridgeTopic : "ctrl2mqttbridge/";
+            if (!bridgeTopic.EndsWith("/"))
+                bridgeTopic += "/";
+            mqttPrefix = bridgeTopic; 
+
             //MqttServerThread = new Thread(new ThreadStart(()=>initMqttServer()));
         }
 
-        public async Task StartAsync()
+        string GetUsername()
+        {
+            try
+            {
+                return Program.Ctrl2MqttBridgeSettings.BridgeCredentials.Split(':')[0];
+            }
+            catch(Exception e) { }
+            return "Ctrl2MqttBridge";
+        }
+        string GetPassword()
+        {
+            try
+            {
+                return Program.Ctrl2MqttBridgeSettings.BridgeCredentials.Split(':')[1];
+            }
+            catch (Exception e) { }
+            return "Ctrl2MqttBridge";
+        }
+
+public async Task StartAsync()
         {
             Task opcUaTask = null;
             bool opcUaFallback = false;
@@ -156,11 +180,7 @@ namespace Ctrl2MqttBridge
                     if (c.ClientId == ClientId)
                         canPublish = true;
                     
-                    if(!c.ClientId.StartsWith("praekon_HoningHMI_"))
-                    {
-
-                    }
-                    if (c.Username == "Ctrl2MqttBridge" && c.Password == "Ctrl2MqttBridge")
+                    if (c.Username == GetUsername() && c.Password == GetPassword())
                     {
                         canPublish = true;
                     }
