@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
+    <RuntimeIdentifier>win7-x86</RuntimeIdentifier>
     <Version>2.0.8</Version>
     <Authors>Andreas Küffel</Authors>
     <Company>Präwema Antriebstechnik GmbH</Company>
