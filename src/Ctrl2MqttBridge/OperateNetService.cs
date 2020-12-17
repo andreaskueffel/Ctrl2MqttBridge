@@ -196,7 +196,7 @@ namespace Ctrl2MqttBridge
             {
                 foreach(var alarmevent in events)
                 {
-                    OnNewAlarmNotification("alarmEvents", JsonConvert.SerializeObject(alarmevent)); alarmevent.State
+                    OnNewAlarmNotification("alarmEvents", JsonConvert.SerializeObject(alarmevent));
                 }
             }
         }
