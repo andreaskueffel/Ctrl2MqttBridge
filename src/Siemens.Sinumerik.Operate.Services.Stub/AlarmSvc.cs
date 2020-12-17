@@ -19,5 +19,11 @@ namespace Siemens.Sinumerik.Operate.Services
         {
             throw new NotImplementedException();
         }
+
+        public Guid SubscribeEvents(Action<Guid,Alarm[]> alarmEventCallback)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }
