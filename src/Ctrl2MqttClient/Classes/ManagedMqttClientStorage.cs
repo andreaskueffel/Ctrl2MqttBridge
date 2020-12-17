@@ -9,10 +9,10 @@ using System.Runtime.Serialization.Json;
 
 namespace Ctrl2MqttBridge
 {
-    class Storage : IManagedMqttClientStorage
+    class ManagedMqttClientStorage : IManagedMqttClientStorage
     {
         private IManagedMqttClient managedMqttClient = null;
-        public Storage(IManagedMqttClient managedMqttClient)
+        public ManagedMqttClientStorage(IManagedMqttClient managedMqttClient)
         {
             this.managedMqttClient = managedMqttClient;
         }
