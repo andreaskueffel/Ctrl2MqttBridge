@@ -1,4 +1,5 @@
-﻿using MQTTnet;
+﻿using Ctrl2MqttClient;
+using MQTTnet;
 using MQTTnet.Client.Options;
 using MQTTnet.Extensions.ManagedClient;
 using System;
@@ -84,8 +85,18 @@ namespace Ctrl2MqttBridge
                 if (!ConnectionRoundTrip)
                 {
                     Disconnect();
+                    MqttPrefix = BridgeSettingsHelper.GetBridgeTopic();
+                    MqttClientUsername = BridgeSettingsHelper.GetBridgeCredentials().Username;
+                    MqttClientPassword = BridgeSettingsHelper.GetBridgeCredentials().Password;
+
+                    await InitializeMqttClient(mqttIp, mqttPort, clientID);
+                    _ = await CheckMqttBridgeRoundtrip(); //connectionRoundTrip = true;
+                }
+                if (!ConnectionRoundTrip)
+                {
+                    Disconnect();
                     MqttPrefix = "mqttbridge/";
-                    MqttClientUsername=MqttClientPassword="HoningHMI";
+                    MqttClientUsername = MqttClientPassword = "HoningHMI";
 
                     await InitializeMqttClient(mqttIp, mqttPort, clientID);
                     _ = await CheckMqttBridgeRoundtrip(); //connectionRoundTrip = true;
