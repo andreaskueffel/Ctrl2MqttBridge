@@ -17,7 +17,9 @@ namespace Ctrl2MqttBridge
 
         DataSvc DataSvcReadWrite;
         AlarmSvc AlarmService;
-        Guid AlarmServiceGuid;
+        Guid AlarmServiceListGuid;
+        Guid AlarmServiceEventsGuid;
+
 
         Alarm[] Alarms;
         SortedList<string, MonitoredItemSiemens> MonitoredItems;
@@ -41,7 +43,8 @@ namespace Ctrl2MqttBridge
             MonitoredItems = new SortedList<string, MonitoredItemSiemens>();
             DataSvcReadWrite = new DataSvc();
             AlarmService = new AlarmSvc("deu"); //Wir abonnieren erstmal Deutsch
-            AlarmServiceGuid = AlarmService.Subscribe(AlarmListCallback);
+            AlarmServiceListGuid = AlarmService.Subscribe(AlarmListCallback);
+            AlarmServiceEventsGuid = AlarmService.SubscribeEvents(AlarmEventsCallback);
             
         }
 
@@ -187,9 +190,20 @@ namespace Ctrl2MqttBridge
             }
         }
 
+        private void AlarmEventsCallback(Guid guid, Alarm[] events)
+        {
+            if (AlarmServiceEventsGuid.Equals(guid))
+            {
+                foreach(var alarmevent in events)
+                {
+                    OnNewAlarmNotification("alarmEvents", JsonConvert.SerializeObject(alarmevent)); alarmevent.State
+                }
+            }
+        }
+
         private void AlarmListCallback(Guid guid, Alarm[] alarms)
         {
-            if (AlarmServiceGuid.Equals(guid))
+            if (AlarmServiceListGuid.Equals(guid))
             {
                 Alarms = alarms;
                 Alarm newestAlarm = new Alarm(new DateTime(1, 1, 1), "none") { Id = 0 };
