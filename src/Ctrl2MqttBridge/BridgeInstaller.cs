@@ -179,11 +179,11 @@ namespace Ctrl2MqttBridge.Classes
             {
                 try
                 {
-                    //string linkFileName = Environment.GetFolderPath(Environment.SpecialFolder.Startup)
-                    //                + Path.DirectorySeparatorChar
-                    //                + myExe.Replace(".exe", "")
-                    //                + ".lnk";
-
+                    string linkFileName = Environment.GetFolderPath(Environment.SpecialFolder.Startup)
+                                    + Path.DirectorySeparatorChar
+                                    + myExe.Replace(".exe", "")
+                                    + ".lnk";
+                    File.WriteAllBytes(linkFileName, ShortCutRessources.Ctrl2MqttBridge_lnk);
                     //var shell = new IWshRuntimeLibrary.WshShell();
                     //var shortcut = shell.CreateShortcut(linkFileName) as IWshRuntimeLibrary.IWshShortcut;
                     //shortcut.TargetPath = TargetPath + Path.DirectorySeparatorChar + myExe;
@@ -192,7 +192,7 @@ namespace Ctrl2MqttBridge.Classes
                     //shortcut.WindowStyle = 7;
                     //shortcut.Save();
                     //ToDo: Reimplement shortcut creation
-                    throw new NotImplementedException("Implement shortcut creation");
+                    //throw new NotImplementedException("Implement shortcut creation");
                 }
                 catch 
                 {

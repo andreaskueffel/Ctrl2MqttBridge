@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
-    <Version>2.0.7</Version>
+    <Version>2.0.8</Version>
     <Authors>Andreas Küffel</Authors>
     <Company>Präwema Antriebstechnik GmbH</Company>
     <Copyright>2018-2020</Copyright>
@@ -38,6 +38,21 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="ShortCutRessources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ShortCutRessources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="ShortCutRessources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ShortCutRessources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(TargetFramework)'=='net461'">
