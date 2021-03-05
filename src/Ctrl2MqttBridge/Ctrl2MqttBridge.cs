@@ -48,11 +48,13 @@ namespace Ctrl2MqttBridge
 
             //MqttServerThread = new Thread(new ThreadStart(()=>initMqttServer()));
         }
-
+        //test
         string GetUsername()
         {
             try
             {
+                bool test = false;
+                test = true;
                 return Program.Ctrl2MqttBridgeSettings.BridgeCredentials.Split(':')[0];
             }
             catch(Exception e) { }
