@@ -28,6 +28,7 @@ namespace Ctrl2MqttBridge
         IClient Client;
         OperateNetService operateNetService;
         OpcUaConsoleClient opcUaConsoleClient;
+        DVSCtrlConnectorClient dvsCtrlConnectorClient;
         string MachineName;
         //Thread MqttServerThread;
         //Thread MqttClientThread;
@@ -41,10 +42,10 @@ namespace Ctrl2MqttBridge
             MachineName = Environment.MachineName;
             ClientRights = new Dictionary<string, bool>();
             ClientId = "praekon_ctrl2mqttBridge_" + StartTime.ToString("yyyyMMddHHmmss");
-            string bridgeTopic = !String.IsNullOrWhiteSpace(Program.Ctrl2MqttBridgeSettings.BridgeTopic)? Program.Ctrl2MqttBridgeSettings.BridgeTopic : "ctrl2mqttbridge/";
+            string bridgeTopic = !String.IsNullOrWhiteSpace(Program.Ctrl2MqttBridgeSettings.BridgeTopic) ? Program.Ctrl2MqttBridgeSettings.BridgeTopic : "ctrl2mqttbridge/";
             if (!bridgeTopic.EndsWith("/"))
                 bridgeTopic += "/";
-            mqttPrefix = bridgeTopic; 
+            mqttPrefix = bridgeTopic;
 
             //MqttServerThread = new Thread(new ThreadStart(()=>initMqttServer()));
         }
@@ -55,7 +56,7 @@ namespace Ctrl2MqttBridge
             {
                 return Program.Ctrl2MqttBridgeSettings.BridgeCredentials.Split(':')[0];
             }
-            catch(Exception e) { }
+            catch (Exception e) { }
             return "Ctrl2MqttBridge";
         }
         string GetPassword()
@@ -68,35 +69,41 @@ namespace Ctrl2MqttBridge
             return "Ctrl2MqttBridge";
         }
 
-public async Task StartAsync()
+        public async Task StartAsync()
         {
-            Task opcUaTask = null;
-            bool opcUaFallback = false;
-            if (!Program.Ctrl2MqttBridgeSettings.OpcUaMode)
+            if (!Program.Ctrl2MqttBridgeSettings.OpcUaMode && !Program.Ctrl2MqttBridgeSettings.DVSCtrlConnectorMode)
             {
-                try
+                while (null == Client)
                 {
-                    await Task.Run(async () => await initOperateNetService());
-                    Client = (IClient)operateNetService;
+                    try
+                    {
+                        await Task.Run(async () => await initOperateNetService());
+                        Client = (IClient)operateNetService;
+                    }
+                    catch { await Task.Delay(1000); }
                 }
-                catch { opcUaFallback = true; Program.Ctrl2MqttBridgeSettings.OpcUaMode = true; }
             }
-            if (Program.Ctrl2MqttBridgeSettings.OpcUaMode || opcUaFallback)
+            if (Program.Ctrl2MqttBridgeSettings.DVSCtrlConnectorMode)
             {
                 try
                 {
-                    opcUaTask = Task.Run(async () => await initOPCUAClient());
-                    
+                    await initDVSClient();
+                    Client = (IClient)dvsCtrlConnectorClient;
                 }
                 catch (Exception e) { System.Diagnostics.Trace.WriteLine(e.ToString()); }
             }
 
-            //Wait for OPC UA to connect
-            if (opcUaTask != null)
+            if (Program.Ctrl2MqttBridgeSettings.OpcUaMode)
             {
-                await opcUaTask;
-                Client = (IClient)opcUaConsoleClient;
+                try
+                {
+                    await Task.Run(async () => await initOPCUAClient());
+                    Client = (IClient)opcUaConsoleClient;
+
+                }
+                catch (Exception e) { System.Diagnostics.Trace.WriteLine(e.ToString()); }
             }
+
 
 
             await Task.Run(async () => await initMqttServer());
@@ -162,7 +169,7 @@ public async Task StartAsync()
 
 
         }
-        
+
         async Task initMqttServer()
         {
             // Configure MQTT server.
@@ -171,7 +178,7 @@ public async Task StartAsync()
                 .WithConnectionValidator(c =>
                 {
                     //Wenn der Client schon mal da war raus nehmen:
-                    if(ClientRights.ContainsKey(c.ClientId))
+                    if (ClientRights.ContainsKey(c.ClientId))
                     {
                         ClientRights.Remove(c.ClientId);
                     }
@@ -179,14 +186,14 @@ public async Task StartAsync()
 
                     if (c.ClientId == ClientId)
                         canPublish = true;
-                    
+
                     if (c.Username == GetUsername() && c.Password == GetPassword())
                     {
                         canPublish = true;
                     }
                     ClientRights.Add(c.ClientId, canPublish);
                     c.ReasonCode = MQTTnet.Protocol.MqttConnectReasonCode.Success;
-                    
+
                 })
                 .WithApplicationMessageInterceptor(m =>
                 {
@@ -200,7 +207,7 @@ public async Task StartAsync()
                     s.AcceptSubscription = true;
                 })
                 .WithDefaultEndpointPort(Program.Ctrl2MqttBridgeSettings.MqttPort);
-            
+
 
             mqttServer = new MqttFactory().CreateMqttServer();
             await mqttServer.StartAsync(optionsBuilder.Build());
@@ -215,7 +222,7 @@ public async Task StartAsync()
                 .WithClientId(ClientId)
                 .WithCredentials("Ctrl2MqttBridge", "Ctrl2MqttBridge")
                 .WithTcpServer("localhost", Program.Ctrl2MqttBridgeSettings.MqttPort));
-                
+
 
             mqttClient = new MqttFactory().CreateManagedMqttClient();
             await mqttClient.StartAsync(optionsBuilder.Build());
@@ -259,7 +266,7 @@ public async Task StartAsync()
         {
             public IManagedMqttClient mqttClient { get; set; }
             public IClient Client { get; set; }
-            
+
 
 
             public Task HandleApplicationMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs eventArgs)
@@ -352,12 +359,23 @@ public async Task StartAsync()
         async Task initOperateNetService()
         {
             await Task.Run(() =>
-            {                
-                    operateNetService = new OperateNetService();
-                    OperateNetService.NewNotification += Client_NewNotification;
-                    OperateNetService.NewAlarmNotification += Client_NewAlarmNotification;
+            {
+                operateNetService = new OperateNetService();
+                OperateNetService.NewNotification += Client_NewNotification;
+                OperateNetService.NewAlarmNotification += Client_NewAlarmNotification;
             });
         }
+        async Task initDVSClient()
+        {
+            await Task.Run(() =>
+            {
+                dvsCtrlConnectorClient = new DVSCtrlConnectorClient(Program.Ctrl2MqttBridgeSettings.ServerName, Program.Ctrl2MqttBridgeSettings.DVSCtrlConnectorPort);
+                DVSCtrlConnectorClient.NewNotification += Client_NewNotification;
+                DVSCtrlConnectorClient.NewAlarmNotification += Client_NewAlarmNotification;
+            });
+        }
+
+
         async Task initOPCUAClient()
         {
             opcUaConsoleClient = new OpcUaConsoleClient("opc.tcp://" + Program.Ctrl2MqttBridgeSettings.ServerName + ":" + Program.Ctrl2MqttBridgeSettings.OpcUaPort, true, 5000);

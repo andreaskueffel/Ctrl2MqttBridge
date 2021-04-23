@@ -2,24 +2,26 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
-    <RuntimeIdentifier>win7-x86</RuntimeIdentifier>
-    <Version>2.0.8</Version>
+    <TargetFrameworks>net461;netstandard2.0;net50</TargetFrameworks>
+    <RuntimeIdentifiers>win7-x86;linux-x64</RuntimeIdentifiers>
+    <Version>2.0.10</Version>
     <Authors>Andreas Küffel</Authors>
     <Company>Präwema Antriebstechnik GmbH</Company>
-    <Copyright>2018-2020</Copyright>
+    <Copyright>2018-2021</Copyright>
     <PackageLicenseExpression></PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/andreaskueffel/Ctrl2MqttBridge</PackageProjectUrl>
     <RepositoryUrl>https://github.com/andreaskueffel/Ctrl2MqttBridge</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RestoreSources>https://nuget.praewema.de/v3/index.json;https://api.nuget.org/v3/index.json</RestoreSources>
     <PackageTags>mqtt opc ua opcua iot controller s7 sinumerik siemens operate operatenet rexroth</PackageTags>
     <Description>Ctrl2MqttBridge is a Bridge between a control connection (to either OPC UA or Sinumerik Operate) and an easy to implement Mqtt protocol. For client implementation use Ctrl2MqttClient</Description>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DVS.CtrlConnector.Communications" Version="0.0.1" />
     <PackageReference Include="MQTTnet" Version="3.0.12" />
     <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="3.0.12" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua" Version="1.4.363.107" />
     <Reference Condition="Exists('External\Siemens.Sinumerik.Operate.Services.dll')" Include="Siemens.Sinumerik.Operate.Services">
       <HintPath>External\Siemens.Sinumerik.Operate.Services.dll</HintPath>
@@ -56,7 +58,7 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(TargetFramework)'=='net461'">
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="if not $(ConfigurationName)==Release goto :endcreatesetup&#xD;&#xA; $(ProjectDir)\SetupCreatorTools\SetupCreator.exe $(TargetDir)&#xD;&#xA;rem D:\Source\References\MT\mt.exe -manifest &quot;$(TargetDir)Ctrl2MqttBridgeSetup.exe.manifest&quot;  -outputresource:&quot;$(TargetDir)Ctrl2MqttBridgeSetup.exe&quot;;1&#xD;&#xA;:endcreatesetup" />
   </Target>
 

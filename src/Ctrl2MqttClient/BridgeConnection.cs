@@ -84,13 +84,20 @@ namespace Ctrl2MqttBridge
                 _ = await CheckMqttBridgeRoundtrip();
                 if (!ConnectionRoundTrip)
                 {
-                    Disconnect();
-                    MqttPrefix = BridgeSettingsHelper.GetBridgeTopic();
-                    MqttClientUsername = BridgeSettingsHelper.GetBridgeCredentials().Username;
-                    MqttClientPassword = BridgeSettingsHelper.GetBridgeCredentials().Password;
+                    try
+                    {
+                        Disconnect();
+                        MqttPrefix = BridgeSettingsHelper.GetBridgeTopic();
+                        MqttClientUsername = BridgeSettingsHelper.GetBridgeCredentials().Username;
+                        MqttClientPassword = BridgeSettingsHelper.GetBridgeCredentials().Password;
 
-                    await InitializeMqttClient(mqttIp, mqttPort, clientID);
-                    _ = await CheckMqttBridgeRoundtrip(); //connectionRoundTrip = true;
+                        await InitializeMqttClient(mqttIp, mqttPort, clientID);
+                        _ = await CheckMqttBridgeRoundtrip(); //connectionRoundTrip = true;
+                    }
+                    catch(Exception e)
+                    {
+                        ConnectionRoundTrip = false;
+                    }
                 }
                 if (!ConnectionRoundTrip)
                 {
@@ -315,6 +322,7 @@ namespace Ctrl2MqttBridge
                 await SendConnectionState("CONNECTED", clientID);
                 //await Task.Run(async () => await Task.Run(() => OnConnectionHandler(true)));
                 //Moved to ConnectionRoundTrip
+                _ = await CheckMqttBridgeRoundtrip();
                 System.Diagnostics.Trace.WriteLine("MQTT Connected");
             });
             mqttClient.UseDisconnectedHandler(async e =>
@@ -328,12 +336,20 @@ namespace Ctrl2MqttBridge
             await mqttClient.StartAsync(options);
             
         }
-        private async Task<bool> CheckMqttBridgeRoundtrip()
+        
+        private async Task<bool> CheckMqttBridgeRoundtrip(int connectedTimeout=10000)
         {
+            int timeoutcount = 0;
             //Check backwards compatibility with MqttBridge
-            while (!IsConnected)
+            while (!IsConnected &&timeoutcount<=connectedTimeout)
             {
                 await Task.Delay(200);
+                timeoutcount += 200;
+            }
+            if (!IsConnected)
+            {
+                ConnectionRoundTrip = true; //When we do not get any connection do not try the fallbacks at all
+                return false;
             }
             await SendToMQTT(MqttPrefix + "write" + "/nonsensetocheckbridgeconnectivity", "roundtriptest");
             int timeout = 10;
