@@ -68,25 +68,30 @@ namespace Ctrl2MqttBridge
             catch (Exception e) { }
             return "Ctrl2MqttBridge";
         }
+        volatile bool operateConnectInProgress = true;
 
         public async Task StartAsync()
         {
             if (!Program.Ctrl2MqttBridgeSettings.OpcUaMode && !Program.Ctrl2MqttBridgeSettings.DVSCtrlConnectorMode)
             {
-                while (null == Client)
+                while (operateConnectInProgress)
                 {
                     try
                     {
+                        Console.WriteLine("Initialize OperateNET Service");
                         await Task.Run(async () => await initOperateNetService());
                         Client = (IClient)operateNetService;
+                        operateConnectInProgress = false;
+                        break;
                     }
-                    catch { await Task.Delay(1000); }
+                    catch (Exception exc) { Console.WriteLine($"exception caught: {exc.Message}, {exc.ToString()}"); await Task.Delay(1000); }
                 }
             }
             if (Program.Ctrl2MqttBridgeSettings.DVSCtrlConnectorMode)
             {
                 try
                 {
+                    Console.WriteLine("Initialize DVSCtrlConnection Service");
                     await initDVSClient();
                     Client = (IClient)dvsCtrlConnectorClient;
                 }
@@ -97,6 +102,7 @@ namespace Ctrl2MqttBridge
             {
                 try
                 {
+                    Console.WriteLine("Initialize OPC UA Service");
                     await Task.Run(async () => await initOPCUAClient());
                     Client = (IClient)opcUaConsoleClient;
 

@@ -2,9 +2,10 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net461;netstandard2.0;net50</TargetFrameworks>
-    <RuntimeIdentifiers>win7-x86;linux-x64</RuntimeIdentifiers>
-    <Version>2.0.10</Version>
+    <TargetFramework>net461</TargetFramework>
+    <RuntimeIdentifier>win7-x86</RuntimeIdentifier>
+    <Platform>x86</Platform>
+    <Version>2.0.11</Version>
     <Authors>Andreas Küffel</Authors>
     <Company>Präwema Antriebstechnik GmbH</Company>
     <Copyright>2018-2021</Copyright>
@@ -19,10 +20,10 @@
 
   <ItemGroup>
     <PackageReference Include="DVS.CtrlConnector.Communications" Version="0.0.1" />
-    <PackageReference Include="MQTTnet" Version="3.0.12" />
-    <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="3.0.12" />
+    <PackageReference Include="MQTTnet" Version="3.0.15" />
+    <PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="3.0.15" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua" Version="1.4.363.107" />
+    <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua" Version="1.4.365.48" />
     <Reference Condition="Exists('External\Siemens.Sinumerik.Operate.Services.dll')" Include="Siemens.Sinumerik.Operate.Services">
       <HintPath>External\Siemens.Sinumerik.Operate.Services.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>

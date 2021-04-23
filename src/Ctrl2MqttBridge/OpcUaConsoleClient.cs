@@ -165,7 +165,7 @@ namespace Ctrl2MqttBridge
 
             if (haveAppCertificate)
             {
-                config.ApplicationUri = Utils.GetApplicationUriFromCertificate(config.SecurityConfiguration.ApplicationCertificate.Certificate);
+                config.ApplicationUri = "ctrl2mqttbridge.ekon.praewema.de";
                 if (config.SecurityConfiguration.AutoAcceptUntrustedCertificates)
                 {
                     autoAccept = true;
