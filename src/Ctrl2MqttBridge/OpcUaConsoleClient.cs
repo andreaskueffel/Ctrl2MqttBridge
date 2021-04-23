@@ -165,7 +165,7 @@ namespace Ctrl2MqttBridge
 
             if (haveAppCertificate)
             {
-                config.ApplicationUri = "ctrl2mqttbridge.ekon.praewema.de";
+                //config.ApplicationUri = "urn:ekon.praewema.de:ekon:ctrl2mqttbridge";
                 if (config.SecurityConfiguration.AutoAcceptUntrustedCertificates)
                 {
                     autoAccept = true;
@@ -206,7 +206,9 @@ namespace Ctrl2MqttBridge
             Console.WriteLine("3 - Create a session with OPC UA server.");
             exitCode = ExitCode.ErrorCreateSession;
             var endpointConfiguration = EndpointConfiguration.Create(config);
+            Console.WriteLine("3a - Create ConfiguredEndpoint");
             var endpoint = new ConfiguredEndpoint(null, selectedEndpoint, endpointConfiguration);
+            Console.WriteLine("3a - Create Session");
             session = await Session.Create(config, endpoint, false, "OPC UA Console Client", 60000, identity, null);
 
             // register keep alive handler
@@ -488,7 +490,7 @@ namespace Ctrl2MqttBridge
 
         private static void CertificateValidator_CertificateValidation(CertificateValidator validator, CertificateValidationEventArgs e)
         {
-            if (e.Error.StatusCode == StatusCodes.BadCertificateUntrusted)
+            if (e.Error.StatusCode == StatusCodes.BadCertificateUntrusted || !e.Accept)
             {
                 e.Accept = autoAccept;
                 if (autoAccept)

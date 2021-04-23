@@ -79,7 +79,7 @@ namespace Ctrl2MqttBridge
                     try
                     {
                         Console.WriteLine("Initialize OperateNET Service");
-                        await Task.Run(async () => await initOperateNetService());
+                        await initOperateNetService();
                         Client = (IClient)operateNetService;
                         operateConnectInProgress = false;
                         break;
@@ -103,14 +103,15 @@ namespace Ctrl2MqttBridge
                 try
                 {
                     Console.WriteLine("Initialize OPC UA Service");
-                    await Task.Run(async () => await initOPCUAClient());
+                    await initOPCUAClient();
                     Client = (IClient)opcUaConsoleClient;
 
                 }
                 catch (Exception e) { System.Diagnostics.Trace.WriteLine(e.ToString()); }
             }
 
-
+            if (null == Client)
+                Console.WriteLine("client is null -> ???");
 
             await Task.Run(async () => await initMqttServer());
             await Task.Run(async () => await initMqttClient());
@@ -385,7 +386,11 @@ namespace Ctrl2MqttBridge
         async Task initOPCUAClient()
         {
             opcUaConsoleClient = new OpcUaConsoleClient("opc.tcp://" + Program.Ctrl2MqttBridgeSettings.ServerName + ":" + Program.Ctrl2MqttBridgeSettings.OpcUaPort, true, 5000);
-            await opcUaConsoleClient.RunAsync();
+            try
+            {
+                await opcUaConsoleClient.RunAsync();
+            }
+            catch(Exception exc) { Console.WriteLine("Exception caught: " + exc.ToString()); }
             OpcUaConsoleClient.NewNotification += Client_NewNotification;
             OpcUaConsoleClient.NewAlarmNotification += Client_NewAlarmNotification;
         }
