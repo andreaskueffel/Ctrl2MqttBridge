@@ -204,7 +204,9 @@ namespace Ctrl2MqttBridge
                 })
                 .WithApplicationMessageInterceptor(m =>
                 {
-                    if (ClientRights.ContainsKey(m.ClientId)) //Sollte immer true sein...
+                    if (m.ClientId != ClientId && BlacklistedTopics.ContainsBlacklisted(m.ApplicationMessage.Topic))
+                        m.AcceptPublish = false;
+                    else if (ClientRights.ContainsKey(m.ClientId)) //Sollte immer true sein...
                         m.AcceptPublish = ClientRights[m.ClientId];
                     else
                         m.AcceptPublish = false;
