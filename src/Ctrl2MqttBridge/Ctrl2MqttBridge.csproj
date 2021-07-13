@@ -5,7 +5,7 @@
     <TargetFramework>net461</TargetFramework>
     <RuntimeIdentifier>win7-x86</RuntimeIdentifier>
     <Platform>x86</Platform>
-    <Version>2.0.13</Version>
+    <Version>2.0.14</Version>
     <Authors>Andreas Küffel</Authors>
     <Company>Präwema Antriebstechnik GmbH</Company>
     <Copyright>2018-2021</Copyright>

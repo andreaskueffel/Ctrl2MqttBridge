@@ -60,8 +60,15 @@ namespace Ctrl2MqttBridge
                     return ((double)item).ToString().Replace(",", ".");
                 if (item.GetType() == typeof(float))
                     return ((float)item).ToString().Replace(",", ".");
-                if (item.GetType() == typeof(object))
-                    return "";
+                if (item.GetType() == typeof(object[]))
+                {
+                    List<string> retvals = new List<string>();
+                    foreach (var obj in item as object[])
+                    {
+                        retvals.Add(GetStringFromDataObject(obj));
+                    }
+                    return string.Join(",", retvals.ToArray());
+                }
 
             }
             catch (Exception exc)
