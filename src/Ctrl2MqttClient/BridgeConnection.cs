@@ -68,19 +68,22 @@ namespace Ctrl2MqttBridge
                 subscriptionHelpersLock = new object();
         }
         /// <summary>
-        /// Connects synchronous to the Bridge - this is not recommended!! Use ConnectAsync instead
+        /// Connects synchronous to the Bridge - this will be removed in a future release
         /// </summary>
         /// <param name="mqttIp"></param>
         /// <param name="mqttPort"></param>
         /// <param name="clientID"></param>
+        [Obsolete("Use ConnectAsync. ConnectSync is just a wrapper and will be removed in a future release")]
         public void ConnectSync(string mqttIp, int mqttPort, string clientID)
         {
-            ConnectAsync(mqttIp, mqttPort, clientID).Wait();
+            ConnectAsync(mqttIp, mqttPort, clientID, useFallbacks: true).Wait();
         }
-        public Task ConnectAsync(string mqttIp, int mqttPort, string clientID)
+        public async Task ConnectAsync(string mqttIp, int mqttPort, string clientID, bool useFallbacks)
         {
-            return Task.Run(async () => { 
-                await InitializeMqttClient(mqttIp, mqttPort, clientID);
+
+            await InitializeMqttClient(mqttIp, mqttPort, clientID);
+            if (useFallbacks)
+            {
                 _ = await CheckMqttBridgeRoundtrip();
                 if (!ConnectionRoundTrip)
                 {
@@ -94,7 +97,7 @@ namespace Ctrl2MqttBridge
                         await InitializeMqttClient(mqttIp, mqttPort, clientID);
                         _ = await CheckMqttBridgeRoundtrip(); //connectionRoundTrip = true;
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         ConnectionRoundTrip = false;
                     }
@@ -108,7 +111,7 @@ namespace Ctrl2MqttBridge
                     await InitializeMqttClient(mqttIp, mqttPort, clientID);
                     _ = await CheckMqttBridgeRoundtrip(); //connectionRoundTrip = true;
                 }
-            });
+            }
         }
         
         public void Disconnect()
@@ -132,8 +135,8 @@ namespace Ctrl2MqttBridge
                     subscriptionHelpers.Add(subsc);
                 }
             }
-            if (!subsc.MonitoredItems.ContainsKey(nodeId))
-                subsc.MonitoredItems.Add(nodeId, new MonitoredItem() { NodeId = nodeId, DisplayName = nodeId.ToLower() });
+            subsc.AddIfNotContained(nodeId, new MonitoredItem() { NodeId = nodeId, DisplayName = nodeId.ToLower() });
+            
             _ = SendToMQTT(MqttPrefix + "subscribe" + nodeId, "100", 1);
         }
 
@@ -259,19 +262,10 @@ namespace Ctrl2MqttBridge
             // Setup and start a managed MQTT client.
             var options = new ManagedMqttClientOptionsBuilder()
                 .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
-                //.WithStorage(Storage)
                 .WithClientOptions(new MqttClientOptionsBuilder()
                     .WithClientId(clientID + new Random().Next(10000, 10000000).ToString())
                     .WithTcpServer(server, port)
-                    //.WithTls(tlsoptions)
                     .WithCredentials(MqttClientUsername, MqttClientPassword)
-                    .WithWillMessage(new MqttApplicationMessage()
-                    {
-                        Topic = MqttPrefix + clientID,
-                        Retain = true,
-                        Payload = Encoding.UTF8.GetBytes("DROPPED"),
-                        QualityOfServiceLevel = MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce
-                    })
                     .Build())
                 .Build();
 
@@ -299,7 +293,6 @@ namespace Ctrl2MqttBridge
                     {
                         string nodeId = e.ApplicationMessage.Topic.Replace(MqttPrefix + "readresult/", "/");
                         string payload = null;
-                        //System.Diagnostics.Trace.WriteLine(e.ApplicationMessage.Topic + "=" + e.ApplicationMessage.Payload.ToString());
                         if (e.ApplicationMessage.Payload != null)
                             payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
                         Task.Run(() => OnReadResult(nodeId, payload));
@@ -315,7 +308,7 @@ namespace Ctrl2MqttBridge
                         Task.Run(() => OnWriteResult(nodeId, payload));
 
                     }
-                });
+                }).ConfigureAwait(false);
             });
             mqttClient.UseConnectedHandler(async e =>
             {
