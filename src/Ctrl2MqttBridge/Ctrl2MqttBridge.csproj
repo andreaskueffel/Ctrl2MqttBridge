@@ -60,7 +60,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="if not $(ConfigurationName)==Release goto :endcreatesetup&#xD;&#xA; $(ProjectDir)\SetupCreatorTools\SetupCreator.exe $(TargetDir)&#xD;&#xA;rem D:\Source\References\MT\mt.exe -manifest &quot;$(TargetDir)Ctrl2MqttBridgeSetup.exe.manifest&quot;  -outputresource:&quot;$(TargetDir)Ctrl2MqttBridgeSetup.exe&quot;;1&#xD;&#xA;:endcreatesetup" />
+    <Exec Condition="$(Configuration)==Release" Command="$(ProjectDir)\SetupCreatorTools\SetupCreator.exe $(TargetDir)" />
   </Target>
 
 </Project>
