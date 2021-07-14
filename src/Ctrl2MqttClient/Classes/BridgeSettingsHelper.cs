@@ -76,9 +76,9 @@ namespace Ctrl2MqttClient
             string defaultLocation = @"C:\Ctrl2MqttBridge";
             string legacyLocation = @"C:\MqttBridge";
             if (Directory.Exists(defaultLocation))
-                return new DirectoryInfo(defaultLocation).GetFiles("*.json").FirstOrDefault().FullName;
+                return new DirectoryInfo(defaultLocation).GetFiles("*BridgeSettings.json").FirstOrDefault().FullName;
             else if (Directory.Exists(legacyLocation))
-                return new DirectoryInfo(legacyLocation).GetFiles("*.json").FirstOrDefault().FullName;
+                return new DirectoryInfo(legacyLocation).GetFiles("*BridgeSettings.json").FirstOrDefault().FullName;
             return "";
         }
     }
