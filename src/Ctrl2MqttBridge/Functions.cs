@@ -52,6 +52,10 @@ namespace Ctrl2MqttBridge
                 //Welcher Typ kommt da wohl zurück??
                 if (item.GetType() == typeof(string))
                     return (string)item;
+                if (item.GetType() == typeof(char))
+                    return ((char)item).ToString();
+                if (item.GetType() == typeof(byte))
+                    return ((byte)item).ToString();
                 if (item.GetType() == typeof(int))
                     return ((int)item).ToString();
                 if (item.GetType() == typeof(uint))
