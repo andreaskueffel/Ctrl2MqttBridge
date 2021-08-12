@@ -11,6 +11,7 @@ namespace Ctrl2MqttBridge.Classes
     {
         public bool OpcUaMode { get; set; } = false;
         public bool DVSCtrlConnectorMode { get; set; } = false;
+        public bool SinumerikSDKMode { get; set; } = false;
         public string ServerName { get; set; } = "192.168.214.241";
         public int MqttPort { get; set; } = 51883;
         public int OpcUaPort { get; set; } = 4840;

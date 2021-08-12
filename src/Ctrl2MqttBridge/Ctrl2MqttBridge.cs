@@ -29,6 +29,8 @@ namespace Ctrl2MqttBridge
         OperateNetService operateNetService;
         OpcUaConsoleClient opcUaConsoleClient;
         DVSCtrlConnectorClient dvsCtrlConnectorClient;
+        SinumerikSdkClient sinumerikClient;
+
         string MachineName;
         //Thread MqttServerThread;
         //Thread MqttClientThread;
@@ -72,7 +74,7 @@ namespace Ctrl2MqttBridge
 
         public async Task StartAsync()
         {
-            if (!Program.Ctrl2MqttBridgeSettings.OpcUaMode && !Program.Ctrl2MqttBridgeSettings.DVSCtrlConnectorMode)
+            if (!Program.Ctrl2MqttBridgeSettings.OpcUaMode && !Program.Ctrl2MqttBridgeSettings.DVSCtrlConnectorMode && !Program.Ctrl2MqttBridgeSettings.SinumerikSDKMode)
             {
                 while (operateConnectInProgress)
                 {
@@ -87,6 +89,20 @@ namespace Ctrl2MqttBridge
                     catch (Exception exc) { Console.WriteLine($"exception caught: {exc.Message}, {exc.ToString()}"); await Task.Delay(1000); }
                 }
             }
+
+            if(Program.Ctrl2MqttBridgeSettings.SinumerikSDKMode)
+            {
+                try {
+                    Console.WriteLine("Initialize Sinumerik SDK Client");
+                    await initSinumerikClient();
+                    Client = (IClient)sinumerikClient;
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine("Exception caught when initializing SinumerikSDKClient");
+                }
+            }
+
             if (Program.Ctrl2MqttBridgeSettings.DVSCtrlConnectorMode)
             {
                 try
@@ -161,7 +177,7 @@ namespace Ctrl2MqttBridge
                 {
                     Ctrl2MqttBridgeVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString(),
                     ClientCount = ((await mqttServer.GetClientStatusAsync()).Count) - 1,
-                    OperationMode = Client != null ? (Program.Ctrl2MqttBridgeSettings.OpcUaMode ? "OPCUA" : "OperateNetService") : "NO_CTRL_CONNECTION",
+                    OperationMode = Client != null ? (Program.Ctrl2MqttBridgeSettings.SinumerikSDKMode ? "SinumerikSDK" : Program.Ctrl2MqttBridgeSettings.DVSCtrlConnectorMode ? "DVS CtrlConnector" : Program.Ctrl2MqttBridgeSettings.OpcUaMode ? "OPCUA" : "OperateNetService") : "NO_CTRL_CONNECTION",
                     ServerName = MachineName,
                     SubcribedItemsCount = Client != null ? Client.SubscribedItemsCount : 0,
                     Uptime = upTimeString,
@@ -383,6 +399,16 @@ namespace Ctrl2MqttBridge
                 DVSCtrlConnectorClient.NewAlarmNotification += Client_NewAlarmNotification;
             });
         }
+
+        async Task initSinumerikClient()
+        {
+            await Task.Run(() =>
+            {
+                sinumerikClient = new SinumerikSdkClient(Program.Ctrl2MqttBridgeSettings.ServerName.Replace("192.168.214.241", "192.168.214.1"));
+                SinumerikSdkClient.NewNotification += Client_NewNotification;
+            });
+        }
+
 
 
         async Task initOPCUAClient()

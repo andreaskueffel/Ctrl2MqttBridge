@@ -25,6 +25,7 @@ namespace Ctrl2MqttBridge
 
         static void Main(string[] args)
         {
+            Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
             AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionHandler;
             bool InstallOnly = false;
             bool RunOnly = true;

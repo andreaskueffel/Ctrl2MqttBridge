@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Ctrl2MqttBridge
@@ -43,6 +44,37 @@ namespace Ctrl2MqttBridge
                 Console.WriteLine("Settings changed, save to " + SettingsFilename);
                 File.WriteAllText(SettingsFilename, newSettings);
             }
+        }
+
+        public static object GetObjectFromString(string value)
+        {
+            try
+            {
+                //bool
+                bool boolobject;
+                if (bool.TryParse(value, out boolobject))
+                    return boolobject;
+                //double
+                if (value.Count((x) => x == '.') == 1)
+                {
+                    double doubleobject;
+                    if (double.TryParse(value, out doubleobject))
+                        return doubleobject;
+                }
+                //int
+                if(value.Count((x)=> !char.IsDigit(x)) == 0)
+                {
+                    int intobject;
+                    if (int.TryParse(value, out intobject))
+                        return intobject;
+                }
+                //string
+                return value;
+                
+
+            }
+            catch { }
+            return value;
         }
 
         public static string GetStringFromDataObject(object item)
