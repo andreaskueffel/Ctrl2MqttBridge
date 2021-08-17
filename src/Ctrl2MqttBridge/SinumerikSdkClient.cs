@@ -15,22 +15,24 @@ namespace Ctrl2MqttBridge
     {
         public static event EventHandler<IMonitoredItem> NewNotification;
 
+        public bool reconnect = false; //use this to enable automatic reconnection attempt
 
-        private readonly SinumerikDevice device;
+        private SinumerikDevice device;
         private NckDeviceConnection connection;
         private ConcurrentDictionary<string, string> subscribedItems;
         private Timer subscriptionTimer;
-        public SinumerikSdkClient(string hostIp)
+        private String hostIp;
+        public SinumerikSdkClient(string _hostIp)
         {
+            hostIp = _hostIp;
+
             subscribedItems = new ConcurrentDictionary<string, string>();
             subscriptionTimer = new Timer(200);
             subscriptionTimer.Elapsed += SubscriptionTimer_Elapsed;
             subscriptionTimer.AutoReset = true;
             subscriptionTimer.Start();
 
-            device = new SinumerikDevice(hostIp, SinumerikDeviceType.SolutionLine);
-            connection = device.CreateConnection();
-            connection.Open();
+            establishConnection(); //by Lukas Czycholl
             
             //var items = device.Values;
             //foreach(var item in items)
@@ -38,7 +40,48 @@ namespace Ctrl2MqttBridge
             //    System.IO.File.AppendAllText("items.txt", item.ToString() + Environment.NewLine);
             //}
         }
+        //created by Lukas Czycholl
+        private void establishConnection()
+        {
+            device = new SinumerikDevice(hostIp, SinumerikDeviceType.SolutionLine);
+            connection = device.CreateConnection();
+            //set event handlers
+            connection.Opened += new EventHandler(delegate (Object o, EventArgs e)
+            {
+                Console.WriteLine("sdk Client Opened");
+            });
+            connection.Connected += new EventHandler(delegate (Object o, EventArgs e)
+            {
+                Console.WriteLine("sdk Client successfully connected");
+            });
+            connection.Closed += new EventHandler(delegate (Object o, EventArgs e)
+            {
+                Console.WriteLine("sdk Client Closed");
+            });
+            connection.Disconnected += new EventHandler(delegate (Object o, EventArgs e)
+            {
+                Console.WriteLine("sdk Client disconnected. Address was: %s", hostIp);
+                if (reconnect)
+                {
+                    connect();
+                    Console.WriteLine("trying to reconnect.");
+                }
+            });
+            connect();
+        }
 
+        private void connect()
+        {
+            //opening and connecting connection.
+            connection.Open();
+            connection.Connect();
+        }
+        private void disconnect()
+        {
+            connection.Close();
+            connection.Dispose();
+        }
+        //end created by Lukas Czycholl
         private void SubscriptionTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             foreach (var item in subscribedItems.Keys)

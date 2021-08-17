@@ -148,11 +148,9 @@ namespace Ctrl2MqttBridge
                 t.Change(1000, 10000);
             }
 
-
             System.Diagnostics.Trace.WriteLine("Started in " + (Program.Ctrl2MqttBridgeSettings.OpcUaMode ? "OPCUA" : "SIEMENSDLL") + "Mode", "MAIN");
 
         }
-
 
         static double lastCPUMillis = 0;
         static double lastUptimeMillis = 0;
@@ -171,7 +169,6 @@ namespace Ctrl2MqttBridge
                 lastUptimeMillis = upTime.TotalMilliseconds;
                 double cpu = Math.Round(100.0 * (deltaCPUMillis / deltaUptimeMillis), 1);
                 string ram = (System.Diagnostics.Process.GetCurrentProcess().WorkingSet64 / 1024 / 1024) + " MiB";
-
 
                 return new BridgeStatus()
                 {
@@ -380,7 +377,6 @@ namespace Ctrl2MqttBridge
                 });
             }
         }
-
         async Task initOperateNetService()
         {
             await Task.Run(() =>
