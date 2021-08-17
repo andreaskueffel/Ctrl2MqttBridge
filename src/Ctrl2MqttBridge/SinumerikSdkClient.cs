@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -20,14 +21,14 @@ namespace Ctrl2MqttBridge
         private SinumerikDevice device;
         private NckDeviceConnection connection;
         private ConcurrentDictionary<string, string> subscribedItems;
-        private Timer subscriptionTimer;
+        private System.Timers.Timer subscriptionTimer;
         private String hostIp;
         public SinumerikSdkClient(string _hostIp)
         {
             hostIp = _hostIp;
 
             subscribedItems = new ConcurrentDictionary<string, string>();
-            subscriptionTimer = new Timer(200);
+            subscriptionTimer = new System.Timers.Timer(200);
             subscriptionTimer.Elapsed += SubscriptionTimer_Elapsed;
             subscriptionTimer.AutoReset = true;
             subscriptionTimer.Start();
@@ -60,7 +61,7 @@ namespace Ctrl2MqttBridge
             });
             connection.Disconnected += new EventHandler(delegate (Object o, EventArgs e)
             {
-                Console.WriteLine("sdk Client disconnected. Address was: %s", hostIp);
+                Console.WriteLine("sdk Client disconnected. Address was: " + hostIp);
                 if (reconnect)
                 {
                     connect();
@@ -70,9 +71,27 @@ namespace Ctrl2MqttBridge
             connect();
         }
 
+        private async Task checkConnection()
+        {
+            while (true)
+            {
+                Thread.Sleep(5000);
+                if (!IsConnected)
+                {
+                    Console.WriteLine("sdk client was not able to connect. Address was: " + hostIp);
+                    Console.WriteLine("is the NCU running?");
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
         private void connect()
         {
             //opening and connecting connection.
+            Task.Run(() => checkConnection().ConfigureAwait(false));
             connection.Open();
             connection.Connect();
         }
