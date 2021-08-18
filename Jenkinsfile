@@ -5,7 +5,7 @@ try {
         stage('Checkout and prepare Version'){
             cleanWs()
             checkout scm
-            newversion = getNewVersion(masterBranch: 'main', incrementOnMaster: true)
+            newversion = getNewVersion(masterBranch: 'main', bumpIndex=2, incrementOnMaster: true)
         }
         stage('Build Windows binaries') {
             script {
