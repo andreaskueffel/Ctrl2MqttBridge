@@ -27,13 +27,13 @@ try {
                 docker.withRegistry(
                     'https://852118034105.dkr.ecr.eu-central-1.amazonaws.com',
                     'ecr:eu-central-1:awsecrfull') {
-                    def dockerImage = docker.build("dvs-ede/ctrl2mqttbridge", "--build-arg newversion=${newversion} .")
+                    def dockerImage = docker.build("dvs-edge/ctrl2mqttbridge", "--build-arg newversion=${newversion} .")
                     dockerImage.push('latest')
                 }
-                sh "docker tag dvs-ede/ctrl2mqttbridge dvs-ede/ctrl2mqttbridge:${tagname}"
-                sh 'docker save --output dvs-edge.ctrl2mqttbridge.docker.tar dvs-ede/ctrl2mqttbridge'
-                sh "docker image rm dvs-ede/ctrl2mqttbridge:${tagname}"
-                sh 'docker image rm dvs-ede/ctrl2mqttbridge'
+                sh "docker tag dvs-edge/ctrl2mqttbridge dvs-edge/ctrl2mqttbridge:${tagname}"
+                sh 'docker save --output dvs-edge.ctrl2mqttbridge.docker.tar dvs-edge/ctrl2mqttbridge'
+                sh "docker image rm dvs-edge/ctrl2mqttbridge:${tagname}"
+                sh 'docker image rm dvs-edge/ctrl2mqttbridge'
             }
         }
         stage('upload docker.tar to nextcloud') {
