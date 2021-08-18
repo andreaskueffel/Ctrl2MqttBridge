@@ -3,8 +3,7 @@ ARG newversion=1.0.0
 FROM mcr.microsoft.com/dotnet/runtime AS base
 ARG newversion
 WORKDIR /app
-EXPOSE 4840
-EXPOSE 5000
+EXPOSE 51883
 
 FROM mcr.microsoft.com/dotnet/sdk AS build
 ARG newversion
