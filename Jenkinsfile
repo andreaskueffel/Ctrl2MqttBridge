@@ -31,7 +31,7 @@ try {
             }
         }
         stage('Upload windows installer to nextcloud') {
-            uploadToNextcloud("Ctrl2MqttBridgeSetup.exe","Public/Ctrl2MqttBridge/Ctrl2MqttBridgeSetup_${env.BRANCH_NAME}_${newversion}.exe")
+            uploadToNextcloud("nsis/Ctrl2MqttBridgeSetup.exe","Public/Ctrl2MqttBridge/Ctrl2MqttBridgeSetup_${env.BRANCH_NAME}_${newversion}.exe")
         }
         stage('Build docker image') {
             script {
