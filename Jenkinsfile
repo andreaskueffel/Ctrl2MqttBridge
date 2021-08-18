@@ -2,12 +2,12 @@
 String newversion = null
 try {
     node ('master') {
-        stage('Checkout and prepare Version'){
+        stage('Checkout and prepare version'){
             cleanWs()
             checkout scm
             newversion = getNewVersion('main', 2, true)
         }
-        stage('Build Windows binaries') {
+        stage('Build windows binaries') {
             script {
                 def dotnet = docker.image('mcr.microsoft.com/dotnet/sdk')
                 dotnet.pull()
@@ -15,13 +15,25 @@ try {
                     sh "dotnet publish --configuration Release --runtime win-x86 -f net50 -p:Version=${newversion} -o publishwinx86 src/Ctrl2MqttBridge/Ctrl2MqttBridge.csproj"
                     sh 'chown -R 1002:1002 .'
                 }
-                sh 'cd publishwinx86 && zip -r publish.zip .'
             }
         }
-        stage('upload publishwinx86.zip to nextcloud') {
-            uploadToNextcloud("publishwinx86/publish.zip","Public/Ctrl2MqttBridge/ctrl2mqttbridge_${env.BRANCH_NAME}_${newversion}.windows.zip")
+        stage('Create windows installer') {
+            script {
+                sh('cp nsis/installer.nsi nsis/installerv.nsi')
+                sh("sed -i 's/VIProductVersion \"2.0.0.0\"/VIProductVersion \"${newversion}\"/g' nsis/installerv.nsi")
+                sh("sed -i 's/VIFileVersion \"2.0.0.0\"/VIFileVersion \"${newversion}\"/g' nsis/installerv.nsi")
+                def nsis=docker.image('binfalse/nsis')
+                nsis.pull()
+                nsis.inside("--entrypoint=''"){
+                    sh "makensis -V4 nsis/installerv.nsi"
+                }
+                
+            }
         }
-        stage('build docker image') {
+        stage('Upload windows installer to nextcloud') {
+            uploadToNextcloud("Ctrl2MqttBridgeSetup.exe","Public/Ctrl2MqttBridge/Ctrl2MqttBridgeSetup_${env.BRANCH_NAME}_${newversion}.exe")
+        }
+        stage('Build docker image') {
             script {
                 def tagname=newversion.tokenize('+')[0]
                 docker.withRegistry(
