@@ -5,7 +5,7 @@ try {
         stage('Checkout and prepare Version'){
             cleanWs()
             checkout scm
-            newversion = getNewVersion()
+            newversion = getNewVersion(masterBranch: 'main', incrementOnMaster: true)
         }
         stage('Build Windows binaries') {
             script {
@@ -19,7 +19,7 @@ try {
             }
         }
         stage('upload publishwinx86.zip to nextcloud') {
-            uploadToNextcloud("publishwinx86/publish.zip","DataPort/Module/ctrl2mqttbridge_${env.BRANCH_NAME}_${newversion}.windows.zip")
+            uploadToNextcloud("publishwinx86/publish.zip","Public/Ctrl2MqttBridge/ctrl2mqttbridge_${env.BRANCH_NAME}_${newversion}.windows.zip")
         }
         stage('build docker image') {
             script {
@@ -32,12 +32,12 @@ try {
             }
         }
         stage('upload docker.tar to nextcloud') {
-            uploadToNextcloud("dvs-edge.ctrl2mqttbridge.docker.tar","DataPort/Module/ctrl2mqttbridge_${env.BRANCH_NAME}.docker.tar")
+            uploadToNextcloud("dvs-edge.ctrl2mqttbridge.docker.tar","Public/Ctrl2MqttBridge/ctrl2mqttbridge_${env.BRANCH_NAME}.docker.tar")
         }
         stage('Tag repo and clean') {
-            def versionfile="ctrl2mqttbridge__${env.BRANCH_NAME}.version.txt"
+            def versionfile="ctrl2mqttbridge_${env.BRANCH_NAME}.version.txt"
             sh "echo ${newversion} > ${versionfile}"
-            uploadToNextcloud(versionfile,"DataPort/Module/${versionfile}")
+            uploadToNextcloud(versionfile,"Public/Ctrl2MqttBridge/${versionfile}")
             tagAndPush(newversion)
             cleanWs()
         }
