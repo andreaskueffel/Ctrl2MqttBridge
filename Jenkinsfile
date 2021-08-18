@@ -38,6 +38,9 @@ try {
             def versionfile="ctrl2mqttbridge_${env.BRANCH_NAME}.version.txt"
             sh "echo ${newversion} > ${versionfile}"
             uploadToNextcloud(versionfile,"Public/Ctrl2MqttBridge/${versionfile}")
+            withCredentials([usernamePassword(credentialsId: 'githubtoken', usernameVariable: 'USERNAME', passwordVariable: 'TOKEN')]) {
+                sh 'git remote set-url origin https://$TOKEN@github.com/andreaskueffel/Ctrl2MqttBridge.git'   
+            }
             tagAndPush(newversion)
             cleanWs()
         }
