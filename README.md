@@ -1,6 +1,12 @@
+Client
 
 [![NuGet Badge](https://buildstats.info/nuget/Ctrl2MqttClient)](https://www.nuget.org/packages/Ctrl2MqttClient)
 ![BuildAndDeploy](https://github.com/andreaskueffel/Ctrl2MqttBridge/workflows/BuildAndDeploy/badge.svg)
+
+Bridge
+
+[![Bridge Build Status](https://ekonint.praewema.de/jenkins/buildStatus/icon?job=AndreasKueffel%2FCtrl2MqttBridge%2Fmain)](https://ekonint.praewema.de/jenkins/job/AndreasKueffel/job/Ctrl2MqttBridge/job/main/)
+
 
 # Ctrl2MqttBridge
 
@@ -92,4 +98,3 @@ public class CtrlConnection : BridgeConnection
  - Automate Versioning
 
  - Simultanous reads/write with queuing
-Testpush1
