@@ -20,8 +20,8 @@ try {
         stage('Create windows installer') {
             script {
                 sh('cp nsis/installer.nsi nsis/installerv.nsi')
-                sh("sed -i 's/VIProductVersion \"2.0.0.0\"/VIProductVersion \"${newversion}\"/g' nsis/installerv.nsi")
-                sh("sed -i 's/VIFileVersion \"2.0.0.0\"/VIFileVersion \"${newversion}\"/g' nsis/installerv.nsi")
+                sh("sed -i 's/VIProductVersion \"2.0.0.0\"/VIProductVersion \"${newversion}.0\"/g' nsis/installerv.nsi")
+                sh("sed -i 's/VIFileVersion \"2.0.0.0\"/VIFileVersion \"${newversion}.0\"/g' nsis/installerv.nsi")
                 def nsis=docker.image('binfalse/nsis')
                 nsis.pull()
                 nsis.inside("--entrypoint=''"){
