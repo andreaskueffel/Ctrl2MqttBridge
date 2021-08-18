@@ -24,11 +24,16 @@ try {
         stage('build docker image') {
             script {
                 def tagname=newversion.tokenize('+')[0]
-                def dockerImage = docker.build("dvs-ede/ctrl2mqttbridge:${tagname}", "--build-arg newversion=${newversion} .")
-                sh "docker tag dvs-ede/ctrl2mqttbridge:${tagname} dvs-ede/ctrl2mqttbridge:latest"
+                docker.withRegistry(
+                    'https://852118034105.dkr.ecr.eu-central-1.amazonaws.com',
+                    'ecr:eu-central-1:awsecrfull') {
+                    def dockerImage = docker.build("dvs-ede/ctrl2mqttbridge", "--build-arg newversion=${newversion} .")
+                    dockerImage.push('latest')
+                }
+                sh "docker tag dvs-ede/ctrl2mqttbridge dvs-ede/ctrl2mqttbridge:${tagname}"
                 sh 'docker save --output dvs-edge.ctrl2mqttbridge.docker.tar dvs-ede/ctrl2mqttbridge'
                 sh "docker image rm dvs-ede/ctrl2mqttbridge:${tagname}"
-                sh 'docker image rm dvs-ede/ctrl2mqttbridge:latest'
+                sh 'docker image rm dvs-ede/ctrl2mqttbridge'
             }
         }
         stage('upload docker.tar to nextcloud') {
