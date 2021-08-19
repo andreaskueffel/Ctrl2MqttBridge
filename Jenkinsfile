@@ -6,7 +6,7 @@ try {
             cleanWs()
             checkout scm
             withCredentials([file(credentialsId: 'TraegerLicenseSinumerikSDKEval', variable: 'FILE')]) {
-                sh 'cp $FILE > src/Ctrl2MqttBridge'
+                sh 'cp $FILE src/Ctrl2MqttBridge'
             }
             newversion = getNewVersion('main', 2, true)
         }
