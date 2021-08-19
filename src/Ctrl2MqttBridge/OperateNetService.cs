@@ -256,7 +256,7 @@ namespace Ctrl2MqttBridge
                 if (disposing)
                 {
                     // TODO: verwalteten Zustand (verwaltete Objekte) entsorgen.
-                    DataSvcReadWrite.Dispose();
+                    DataSvcReadWrite?.Dispose();
                     if (MonitoredItems != null)
                         foreach (var item in MonitoredItems)
                             item.Value.DataSvc.Dispose();

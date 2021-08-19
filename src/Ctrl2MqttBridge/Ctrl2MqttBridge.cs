@@ -86,7 +86,24 @@ namespace Ctrl2MqttBridge
                         operateConnectInProgress = false;
                         break;
                     }
-                    catch (Exception exc) { Console.WriteLine($"exception caught: {exc.Message}, {exc.ToString()}"); await Task.Delay(1000); }
+                    catch (TypeInitializationException exc)
+                    {
+                        //We are not within Operate
+                        Program.Ctrl2MqttBridgeSettings.SinumerikSDKMode = true;
+                        Console.WriteLine("Initialize OperateNET Service failed, seems we do not run within Operate. Fallback to SinumerikSDK");
+                        break;
+                    }
+                    catch (NotImplementedException exc)
+                    {
+                        //We do not have the Siemens binaries
+                        Program.Ctrl2MqttBridgeSettings.SinumerikSDKMode = true;
+                        Console.WriteLine("Initialize OperateNET Service failed, seems we do not have the Siemens OEM dlls. Fallback to SinumerikSDK");
+                        break;
+                    }
+                    catch (Exception exc) 
+                    { 
+                        Console.WriteLine($"exception caught: {exc.Message}, {exc.ToString()}"); await Task.Delay(1000); 
+                    }
                 }
             }
 
