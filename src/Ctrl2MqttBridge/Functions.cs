@@ -88,6 +88,8 @@ namespace Ctrl2MqttBridge
                     return ((char)item).ToString();
                 if (item.GetType() == typeof(byte))
                     return ((byte)item).ToString();
+                if (item.GetType() == typeof(sbyte))
+                    return ((sbyte)item).ToString();
                 if (item.GetType() == typeof(int))
                     return ((int)item).ToString();
                 if (item.GetType() == typeof(uint))
