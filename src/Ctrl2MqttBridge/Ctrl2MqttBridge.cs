@@ -421,27 +421,39 @@ namespace Ctrl2MqttBridge
 
         private void Client_NewAlarmNotification(object sender, IMonitoredItem e)
         {
-            var message = new MqttApplicationMessage()
-            {
-                Topic = mqttPrefix + "alarmnotification/" + e.DisplayName,
-                Payload = Encoding.UTF8.GetBytes(e.Value)
-            };
-            if (mqttClient != null && mqttClient.IsConnected)
-            {
-                mqttClient.PublishAsync(message);
-            }
-            if (mqttClientExternal != null && mqttClientExternal.IsConnected)
-            {
-                mqttClientExternal.PublishAsync(message);
-            }
+            createAndPushMqttMessage("alarmnotification/", e, false);
         }
         private void Client_NewNotification(object sender, IMonitoredItem e)
         {
-            var message = new MqttApplicationMessage()
+            createAndPushMqttMessage("subscriptionnotification/", e, true);
+        }
+
+        private void createAndPushMqttMessage(string extendedPrefix, IMonitoredItem e, bool createErrorMessage)
+        {
+            
+            //if a payload is avaliable set it to the message
+            if (e.Value != null)
             {
-                Topic = mqttPrefix + "subscriptionnotification/" + e.DisplayName,
-                Payload = Encoding.UTF8.GetBytes(e.Value)
-            };
+                var message = new MqttApplicationMessage()
+                {
+                    Topic = mqttPrefix + extendedPrefix + e.DisplayName,
+                    Payload = Encoding.UTF8.GetBytes(e.Value)
+                };
+                sendMessageToBroker(message);
+            }
+            //if no payload was found check if an error message should be sent
+            else if (createErrorMessage)
+            {
+                var message = new MqttApplicationMessage()
+                {
+                    Topic = mqttPrefix + extendedPrefix + e.DisplayName,
+                    Payload = Encoding.UTF8.GetBytes("no value found on machine")
+                };
+                sendMessageToBroker(message)
+            }
+        }
+        private void sendMessageToBroker(MqttApplicationMessage message)
+        {
             if (mqttClient != null && mqttClient.IsConnected)
             {
                 mqttClient.PublishAsync(message);
@@ -450,7 +462,6 @@ namespace Ctrl2MqttBridge
             {
                 mqttClientExternal.PublishAsync(message);
             }
-
         }
     }
 }

@@ -87,7 +87,6 @@ namespace Ctrl2MqttBridge
                 }
             }
         }
-
         private void connect()
         {
             //opening and connecting connection.
@@ -103,6 +102,7 @@ namespace Ctrl2MqttBridge
         //end created by Lukas Czycholl
         private void SubscriptionTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
+            subscriptionTimer.Stop(); //to disable a deadlock appearing if the timer is faster than the handler
             foreach (var item in subscribedItems.Keys)
             {
                 var readResult = ReadSync(item);
@@ -120,6 +120,7 @@ namespace Ctrl2MqttBridge
                     }).ConfigureAwait(false);
                 }
             }
+            subscriptionTimer.Start();
         }
 
         public int SubscribedItemsCount => subscribedItems.Count;
