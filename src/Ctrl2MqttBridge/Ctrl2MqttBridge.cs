@@ -466,7 +466,7 @@ namespace Ctrl2MqttBridge
                     Topic = mqttPrefix + extendedPrefix + e.DisplayName,
                     Payload = Encoding.UTF8.GetBytes("no value found on machine")
                 };
-                sendMessageToBroker(message)
+                sendMessageToBroker(message);
             }
         }
         private void sendMessageToBroker(MqttApplicationMessage message)
