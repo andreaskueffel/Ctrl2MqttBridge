@@ -442,7 +442,7 @@ namespace Ctrl2MqttBridge
         }
         private void Client_NewNotification(object sender, IMonitoredItem e)
         {
-            createAndPushMqttMessage("subscriptionnotification/", e, true);
+            createAndPushMqttMessage("subscriptionnotification/", e, false);
         }
 
         private void createAndPushMqttMessage(string extendedPrefix, IMonitoredItem e, bool createErrorMessage)
