@@ -16,7 +16,7 @@ namespace Ctrl2MqttBridge
     {
         public static event EventHandler<IMonitoredItem> NewNotification;
 
-        public bool reconnect = false; //use this to enable automatic reconnection attempt
+        public bool reconnect = true; //use this to enable automatic reconnection attempt
 
         private SinumerikDevice device;
         private NckDeviceConnection connection;
@@ -25,6 +25,7 @@ namespace Ctrl2MqttBridge
         private String hostIp;
         public SinumerikSdkClient(string _hostIp)
         {
+            Licenser.LicenseKey = TraegerLicense.LicenseKey;
             hostIp = _hostIp;
 
             subscribedItems = new ConcurrentDictionary<string, string>();
@@ -35,11 +36,7 @@ namespace Ctrl2MqttBridge
 
             establishConnection(); //by Lukas Czycholl
             
-            //var items = device.Values;
-            //foreach(var item in items)
-            //{
-            //    System.IO.File.AppendAllText("items.txt", item.ToString() + Environment.NewLine);
-            //}
+            
         }
         //created by Lukas Czycholl
         private void establishConnection()
