@@ -31,7 +31,7 @@ namespace Ctrl2MqttBridge
             bool RunOnly = true;
 
             Console.WriteLine("-----------------------------------------------------------");
-            Console.WriteLine("Ctrl2MQTT - Bridge                         PRÄWEMA (c) 2020");
+            Console.WriteLine("Ctrl2MQTT - Bridge                         PRÄWEMA (c) 2021");
             Console.WriteLine("Version: " + typeof(Program).Assembly.GetName().Version.ToString());
             Console.WriteLine("");
             Console.WriteLine("-----------------------------------------------------------");
